@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from titles.models import Review
+from reviews.models import Review
 
 
 class ReviewSerializer(serializers.ModelSerializer):
