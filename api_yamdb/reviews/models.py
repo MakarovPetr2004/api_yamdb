@@ -17,7 +17,8 @@ class Review(models.Model):
     title = models.ForeignKey(
         Title, on_delete=models.CASCADE, related_name='reviews')
     score = models.IntegerField(
-        validators=[validate_max_min]
+        validators=[validate_max_min],
+        default=5
     )
     text = models.TextField()
     created = models.DateTimeField(

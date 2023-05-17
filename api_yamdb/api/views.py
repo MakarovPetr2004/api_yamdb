@@ -4,7 +4,7 @@ from rest_framework import permissions, viewsets
 from rest_framework.pagination import LimitOffsetPagination
 
 from api import serializers
-from titles.models import Review, User, Title
+from reviews.models import Review, User, Title
 
 
 class TitleViewSet(viewsets.ModelViewSet):
