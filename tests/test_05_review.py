@@ -20,42 +20,42 @@ class Test05ReviewAPI:
         reviews, titles = create_reviews(admin_client, author_map)
         new_data = {'text': 'new_text', 'score': 7}
 
-        response = client.get(f'/api/v1/reviews/{titles[0]["id"]}/reviews/')
+        response = client.get(f'/api/v1/titles/{titles[0]["id"]}/reviews/')
         assert response.status_code != HTTPStatus.NOT_FOUND, (
-            'Эндпоинт `/api/v1/reviews/{title_id}/reviews/` не найден, '
+            'Эндпоинт `/api/v1/titles/{title_id}/reviews/` не найден, '
             'проверьте настройки в *urls.py*.'
         )
         assert response.status_code == HTTPStatus.OK, (
             'Проверьте, что GET-запрос неавторизованного пользователя к '
-            '`/api/v1/reviews/{title_id}/reviews/` возвращает ответ со '
+            '`/api/v1/titles/{title_id}/reviews/` возвращает ответ со '
             'статусом 200.'
         )
 
         response = client.post(
-            f'/api/v1/reviews/{titles[0]["id"]}/reviews/', data=new_data
+            f'/api/v1/titles/{titles[0]["id"]}/reviews/', data=new_data
         )
         assert response.status_code == HTTPStatus.UNAUTHORIZED, (
             'Проверьте, что POST-запрос неавторизованного пользователя к '
-            '`/api/v1/reviews/{title_id}/reviews/` возвращает ответ со '
+            '`/api/v1/titles/{title_id}/reviews/` возвращает ответ со '
             'статусом 401.'
         )
 
         response = client.patch(
-            f'/api/v1/reviews/{titles[0]["id"]}/reviews/{reviews[1]["id"]}/',
+            f'/api/v1/titles/{titles[0]["id"]}/reviews/{reviews[1]["id"]}/',
             data=new_data
         )
         assert response.status_code == HTTPStatus.UNAUTHORIZED, (
             'Проверьте, что PATCH-запрос неавторизованного пользователя к '
-            '`/api/v1/reviews/{title_id}/reviews/{review_id}/` возвращает '
+            '`/api/v1/titles/{title_id}/reviews/{review_id}/` возвращает '
             'ответ со статусом 401.'
         )
 
         response = client.delete(
-            f'/api/v1/reviews/{titles[0]["id"]}/reviews/{reviews[1]["id"]}/'
+            f'/api/v1/titles/{titles[0]["id"]}/reviews/{reviews[1]["id"]}/'
         )
         assert response.status_code == HTTPStatus.UNAUTHORIZED, (
             'Проверьте, что DELETE-запрос неавторизованного пользователя к '
-            '`/api/v1/reviews/{{title_id}}/reviews/{{review_id}}/` возвращает '
+            '`/api/v1/titles/{{title_id}}/reviews/{{review_id}}/` возвращает '
             'ответ со статусом 401.'
         )
 
@@ -66,11 +66,11 @@ class Test05ReviewAPI:
 
         data = {}
         response = user_client.post(
-            f'/api/v1/reviews/{titles[0]["id"]}/reviews/', data=data
+            f'/api/v1/titles/{titles[0]["id"]}/reviews/', data=data
         )
         assert response.status_code == HTTPStatus.BAD_REQUEST, (
             'Если POST-запрос авторизованного пользователя к '
-            '`/api/v1/reviews/{title_id}/reviews/` содержит некорректные '
+            '`/api/v1/titles/{title_id}/reviews/` содержит некорректные '
             'данные - должен вернуться ответ со статусом 400.'
         )
 
@@ -91,12 +91,12 @@ class Test05ReviewAPI:
             'score': 1
         }
         response = admin_client.post(
-            f'/api/v1/reviews/{titles[0]["id"]}/reviews/', data=data
+            f'/api/v1/titles/{titles[0]["id"]}/reviews/', data=data
         )
         assert response.status_code == HTTPStatus.BAD_REQUEST, (
             'Проверьте, что при попытке пользователя создать второй отзыв на '
             'одно и то же произведение POST-запрос к '
-            '`/api/v1/reviews/{title_id}/reviews/` вернёт ответ со '
+            '`/api/v1/titles/{title_id}/reviews/` вернёт ответ со '
             'статусом 400.'
         )
 
@@ -126,11 +126,11 @@ class Test05ReviewAPI:
         )
 
         response = admin_client.put(
-            f'/api/v1/reviews/{titles[0]["id"]}/reviews/', data=data
+            f'/api/v1/titles/{titles[0]["id"]}/reviews/', data=data
         )
         assert response.status_code == HTTPStatus.METHOD_NOT_ALLOWED, (
             'Проверьте, что PUT-запрос авторизованного пользователя к '
-            '`/api/v1/reviews/{title_id}/reviews/` возвращает ответ со '
+            '`/api/v1/titles/{title_id}/reviews/` возвращает ответ со '
             'статусом 405.'
         )
 
@@ -143,46 +143,46 @@ class Test05ReviewAPI:
 
         assert type(response.json().get('id')) == int, (
             'Проверьте, что POST-запрос авторизованного пользователя к '
-            '`/api/v1/reviews/{title_id}/reviews/` возвращает данные '
+            '`/api/v1/titles/{title_id}/reviews/` возвращает данные '
             'созданного объекта. Сейчас поля `id` нет в ответе или его '
             'значение не является целым числом.'
         )
 
         data = {'text': 'На один раз', 'score': 4}
-        response = user_client.post('/api/v1/reviews/999/reviews/', data=data)
+        response = user_client.post('/api/v1/titles/999/reviews/', data=data)
         assert response.status_code == HTTPStatus.NOT_FOUND, (
             'Проверьте, что POST-запрос авторизованного пользователя к '
-            '`/api/v1/reviews/{title_id}/reviews/` для несуществующего '
+            '`/api/v1/titles/{title_id}/reviews/` для несуществующего '
             'произведения возвращает ответ со статусом 404.'
         )
 
         data = {'text': 'Супер!', 'score': 11}
         response = user_client.post(
-            f'/api/v1/reviews/{titles[1]["id"]}/reviews/', data=data
+            f'/api/v1/titles/{titles[1]["id"]}/reviews/', data=data
         )
         assert response.status_code == HTTPStatus.BAD_REQUEST, (
             'Если в POST-запросе авторизованного пользователя к '
-            '`/api/v1/reviews/{title_id}/reviews/` передана оценка выше 10 '
+            '`/api/v1/titles/{title_id}/reviews/` передана оценка выше 10 '
             'баллов - должен вернуться ответ со статусом 400.'
         )
 
         data = {'text': 'Ужас!', 'score': 0}
         response = user_client.post(
-            f'/api/v1/reviews/{titles[0]["id"]}/reviews/', data=data
+            f'/api/v1/titles/{titles[0]["id"]}/reviews/', data=data
         )
         assert response.status_code == HTTPStatus.BAD_REQUEST, (
             'Если в POST-запросе авторизованного пользователя к '
-            '`/api/v1/reviews/{title_id}/reviews/` передана оценка ниже 1 '
+            '`/api/v1/titles/{title_id}/reviews/` передана оценка ниже 1 '
             'балла - должен вернуться ответ со статусом 400.'
         )
 
-        url = f'/api/v1/reviews/{titles[0]["id"]}/reviews/'
+        url = f'/api/v1/titles/{titles[0]["id"]}/reviews/'
         response = user_client.get(
-            f'/api/v1/reviews/{titles[0]["id"]}/reviews/'
+            f'/api/v1/titles/{titles[0]["id"]}/reviews/'
         )
         assert response.status_code == HTTPStatus.OK, (
             'Проверьте, что GET-запрос авторизованного пользователя к '
-            '`/api/v1/reviews/{title_id}/reviews/` возвращает ответ со '
+            '`/api/v1/titles/{title_id}/reviews/` возвращает ответ со '
             'статусом 200.'
         )
         data = response.json()
@@ -199,21 +199,21 @@ class Test05ReviewAPI:
                 review = value
         assert review, (
             'Проверьте, что при GET-запросе к '
-            '`/api/v1/reviews/{title_id}/reviews/` возвращается вся информация '
+            '`/api/v1/titles/{title_id}/reviews/` возвращается вся информация '
             'об отзывах. В ответе на запрос не обнаружен текст отзыва.'
         )
         check_fields(
-            'review', '/api/v1/reviews/{title_id}/reviews/',
+            'review', '/api/v1/titles/{title_id}/reviews/',
             review, expected_data
         )
 
-        response = admin_client.get(f'/api/v1/reviews/{titles[0]["id"]}/')
+        response = admin_client.get(f'/api/v1/titles/{titles[0]["id"]}/')
         data = response.json()
         assert data.get('rating') == 4, (
             'Проверьте, что произведениям присваивается рейтинг, '
             'равный средной оценке оставленных отзывов. '
             'Поле `rating` не найдено в ответе на GET-запрос к '
-            '`/api/v1/reviews/{titles_id}/` или содержит некорректное '
+            '`/api/v1/titles/{titles_id}/` или содержит некорректное '
             'значение.'
         )
 
@@ -225,10 +225,10 @@ class Test05ReviewAPI:
             moderator: moderator_client
         }
         reviews, titles = create_reviews(admin_client, author_map)
-        url_template = '/api/v1/reviews/{title_id}/reviews/{review_id}/'
+        url_template = '/api/v1/titles/{title_id}/reviews/{review_id}/'
 
         response = client.get(
-            f'/api/v1/reviews/{titles[0]["id"]}/reviews/{reviews[0]["id"]}/'
+            f'/api/v1/titles/{titles[0]["id"]}/reviews/{reviews[0]["id"]}/'
         )
         assert response.status_code != HTTPStatus.NOT_FOUND, (
             f'Эндпоинт `{url_template}` не найден. Проверьте настройки в '
@@ -255,13 +255,13 @@ class Test05ReviewAPI:
             moderator: moderator_client
         }
         reviews, titles = create_reviews(admin_client, author_map)
-        url_template = '/api/v1/reviews/{title_id}/reviews/{review_id}/'
+        url_template = '/api/v1/titles/{title_id}/reviews/{review_id}/'
         new_data = {
             'text': 'Top score',
             'score': 10
         }
         response = user_client.patch(
-            f'/api/v1/reviews/{titles[0]["id"]}/reviews/{reviews[1]["id"]}/',
+            f'/api/v1/titles/{titles[0]["id"]}/reviews/{reviews[1]["id"]}/',
             data=new_data
         )
         assert response.status_code == HTTPStatus.OK, (
@@ -277,7 +277,7 @@ class Test05ReviewAPI:
         )
 
         response = user_client.get(
-            f'/api/v1/reviews/{titles[0]["id"]}/reviews/{reviews[1]["id"]}/'
+            f'/api/v1/titles/{titles[0]["id"]}/reviews/{reviews[1]["id"]}/'
         )
         assert response.status_code == HTTPStatus.OK, (
             'Проверьте, что GET-запрос авторизованного пользователя к '
@@ -301,7 +301,7 @@ class Test05ReviewAPI:
         )
 
         response = user_client.patch(
-            f'/api/v1/reviews/{titles[0]["id"]}/reviews/{reviews[2]["id"]}/',
+            f'/api/v1/titles/{titles[0]["id"]}/reviews/{reviews[2]["id"]}/',
             data=new_data
         )
         assert response.status_code == HTTPStatus.FORBIDDEN, (
@@ -311,7 +311,7 @@ class Test05ReviewAPI:
         )
 
         response = user_client.delete(
-            f'/api/v1/reviews/{titles[0]["id"]}/reviews/{reviews[1]["id"]}/'
+            f'/api/v1/titles/{titles[0]["id"]}/reviews/{reviews[1]["id"]}/'
         )
         assert response.status_code == HTTPStatus.NO_CONTENT, (
             'Проверьте, что DELETE-запрос пользователя с ролью `user` к '
@@ -319,7 +319,7 @@ class Test05ReviewAPI:
             'статус 204.'
         )
         response = user_client.get(
-            f'/api/v1/reviews/{titles[0]["id"]}/reviews/'
+            f'/api/v1/titles/{titles[0]["id"]}/reviews/'
         )
         test_data = response.json()['results']
         assert len(test_data) == len(reviews) - 1, (
@@ -328,7 +328,7 @@ class Test05ReviewAPI:
         )
 
         response = user_client.delete(
-            f'/api/v1/reviews/{titles[0]["id"]}/reviews/{reviews[2]["id"]}/'
+            f'/api/v1/titles/{titles[0]["id"]}/reviews/{reviews[2]["id"]}/'
         )
         assert response.status_code == HTTPStatus.FORBIDDEN, (
             'Проверьте, что DELETE-запрос пользователя с ролью `user` к '
@@ -345,7 +345,7 @@ class Test05ReviewAPI:
             user: user_client,
             moderator: moderator_client
         }
-        url_template = '/api/v1/reviews/{title_id}/reviews/{review_id}/'
+        url_template = '/api/v1/titles/{title_id}/reviews/{review_id}/'
         reviews, titles = create_reviews(admin_client, author_map)
         new_data = {
             'text': 'Top score',
@@ -377,7 +377,7 @@ class Test05ReviewAPI:
                 f'`{url_template}` возвращает ответ со статусом 204.'
             )
             response = client.get(
-                f'/api/v1/reviews/{titles[0]["id"]}/reviews/'
+                f'/api/v1/titles/{titles[0]["id"]}/reviews/'
             )
             test_data = response.json()['results']
             assert len(test_data) == len(reviews) - idx, (

@@ -18,7 +18,7 @@ class Test06CommentAPI:
             moderator: moderator_client
         }
         reviews, titles = create_reviews(admin_client, author_map)
-        url = '/api/v1/reviews/{title_id}/reviews/{review_id}/comments/'
+        url = '/api/v1/titles/{title_id}/reviews/{review_id}/comments/'
 
         response = client.get(
             url.format(title_id=titles[0]['id'], review_id=reviews[0]['id'])
@@ -39,7 +39,7 @@ class Test06CommentAPI:
             moderator: moderator_client
         }
         reviews, titles = create_reviews(admin_client, author_map)
-        url = '/api/v1/reviews/{title_id}/reviews/{review_id}/comments/'
+        url = '/api/v1/titles/{title_id}/reviews/{review_id}/comments/'
         first_review_comment_cnt = 0
 
         data = {}
@@ -74,7 +74,7 @@ class Test06CommentAPI:
         )
 
         response = admin_client.post(
-            '/api/v1/reviews/999/reviews/999/comments/', data=post_data
+            '/api/v1/titles/999/reviews/999/comments/', data=post_data
         )
         assert response.status_code == HTTPStatus.NOT_FOUND, (
             'Проверьте, что POST-запрос авторизованного пользователя к '
@@ -117,7 +117,7 @@ class Test06CommentAPI:
         }
         comments, reviews, titles = create_comments(admin_client, author_map)
         url = (
-            '/api/v1/reviews/{title_id}/reviews/'
+            '/api/v1/titles/{title_id}/reviews/'
             '{review_id}/comments/{comment_id}/'
         )
         response = client.get(
@@ -152,7 +152,7 @@ class Test06CommentAPI:
         }
         comments, reviews, titles = create_comments(admin_client, author_map)
         url = (
-            '/api/v1/reviews/{title_id}/reviews/'
+            '/api/v1/titles/{title_id}/reviews/'
             '{review_id}/comments/{comment_id}/'
         )
 
@@ -259,7 +259,7 @@ class Test06CommentAPI:
         }
         comments, reviews, titles = create_comments(admin_client, author_map)
         url = (
-            '/api/v1/reviews/{title_id}/reviews/'
+            '/api/v1/titles/{title_id}/reviews/'
             '{review_id}/comments/{comment_id}/'
         )
 
@@ -328,7 +328,7 @@ class Test06CommentAPI:
         }
         comments, reviews, titles = create_comments(admin_client, author_map)
         url = (
-            '/api/v1/reviews/{title_id}/reviews/'
+            '/api/v1/titles/{title_id}/reviews/'
             '{review_id}/comments/{comment_id}/'
         )
         new_data = {'text': 'update'}
