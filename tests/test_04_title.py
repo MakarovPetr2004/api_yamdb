@@ -10,20 +10,20 @@ from tests.utils import (check_pagination, check_permissions,
 class Test04TitleAPI:
 
     def test_01_title_not_auth(self, client):
-        response = client.get('/api/v1/titles/')
+        response = client.get('/api/v1/reviews/')
         assert response.status_code != HTTPStatus.NOT_FOUND, (
-            'Эндпоинт `/api/v1/titles/` не найден.Проверьте настройки в '
+            'Эндпоинт `/api/v1/reviews/` не найден.Проверьте настройки в '
             '*urls.py*.'
         )
         assert response.status_code == HTTPStatus.OK, (
             'Проверьте, что GET-запрос неавторизованного пользователя к '
-            '`/api/v1/titles/` возвращает ответ со статусом 200.'
+            '`/api/v1/reviews/` возвращает ответ со статусом 200.'
         )
 
     def test_02_title_admin(self, admin_client, client):
         genres = create_genre(admin_client)
         categories = create_categories(admin_client)
-        url = '/api/v1/titles/'
+        url = '/api/v1/reviews/'
         title_count = 0
 
         assert_msg = (
@@ -181,30 +181,30 @@ class Test04TitleAPI:
 
     def test_03_titles_detail(self, client, admin_client):
         titles, categories, genres = create_titles(admin_client)
-        response = client.get(f'/api/v1/titles/{titles[0]["id"]}/')
+        response = client.get(f'/api/v1/reviews/{titles[0]["id"]}/')
         assert response.status_code != HTTPStatus.NOT_FOUND, (
-            'Эндпоинт `/api/v1/titles/{title_id}/` не найден, проверьте '
+            'Эндпоинт `/api/v1/reviews/{title_id}/` не найден, проверьте '
             'настройки в *urls.py*.'
         )
         assert response.status_code == HTTPStatus.OK, (
             'Проверьте, что GET-запрос неавторизованного пользователя к '
-            '`/api/v1/titles/{title_id}/` возвращает ответ со статусом 200.'
+            '`/api/v1/reviews/{title_id}/` возвращает ответ со статусом 200.'
         )
         data = response.json()
         assert isinstance(data.get('id'), int), (
             'Поле `id` отсутствует или содержит некорректное значение '
             'в ответе на GET-запрос неавторизованного пользователя к '
-            '`/api/v1/titles/{title_id}/`.'
+            '`/api/v1/reviews/{title_id}/`.'
         )
         assert data.get('category') == categories[0], (
             'Поле `category` отсутствует или содержит некорректное значение '
             'в ответе на GET-запрос неавторизованного пользователя к '
-            '`/api/v1/titles/{title_id}/`.'
+            '`/api/v1/reviews/{title_id}/`.'
         )
         assert data.get('name') == titles[0]['name'], (
             'Поле `name` отсутствует или содержит некорректное значение '
             'в ответе на GET-запрос неавторизованного пользователя к '
-            '`/api/v1/titles/{title_id}/`.'
+            '`/api/v1/reviews/{title_id}/`.'
         )
 
         update_data = {
@@ -212,48 +212,48 @@ class Test04TitleAPI:
             'category': categories[1]['slug']
         }
         response = admin_client.patch(
-            f'/api/v1/titles/{titles[0]["id"]}/', data=update_data
+            f'/api/v1/reviews/{titles[0]["id"]}/', data=update_data
         )
         assert response.status_code == HTTPStatus.OK, (
             'Проверьте, что PATCH-запрос администратора к '
-            '`/api/v1/titles/{title_id}/` возвращает ответ со статусом 200.'
+            '`/api/v1/reviews/{title_id}/` возвращает ответ со статусом 200.'
         )
         data = response.json()
         assert data.get('name') == update_data['name'], (
             'Проверьте, что PATCH-запрос администратора к '
-            '`/api/v1/titles/{title_id}/` возвращает изменённые данные '
+            '`/api/v1/reviews/{title_id}/` возвращает изменённые данные '
             'произведения. Сейчас поле `name` отсутствует в ответе или '
             'содержит некорректное значение.'
         )
-        response = client.get(f'/api/v1/titles/{titles[0]["id"]}/')
+        response = client.get(f'/api/v1/reviews/{titles[0]["id"]}/')
         data = response.json()
         assert data.get('category') == categories[1], (
             'Проверьте, что PATCH-запрос администратора к '
-            '`/api/v1/titles/{title_id}/` может изменять значение поля '
+            '`/api/v1/reviews/{title_id}/` может изменять значение поля '
             '`category` произведения.'
         )
         assert data.get('name') == update_data['name'], (
             'Проверьте, что PATCH-запрос администратора к '
-            '`/api/v1/titles/{title_id}/` может изменять значение поля '
+            '`/api/v1/reviews/{title_id}/` может изменять значение поля '
             '`name` произведения.'
         )
 
-        response = admin_client.delete(f'/api/v1/titles/{titles[0]["id"]}/')
+        response = admin_client.delete(f'/api/v1/reviews/{titles[0]["id"]}/')
         assert response.status_code == HTTPStatus.NO_CONTENT, (
             'Проверьте, что DELETE-запрос администратора к '
-            '`/api/v1/titles/{title_id}/` возвращает ответ со статусом 204.'
+            '`/api/v1/reviews/{title_id}/` возвращает ответ со статусом 204.'
         )
-        response = admin_client.get('/api/v1/titles/')
+        response = admin_client.get('/api/v1/reviews/')
         test_data = response.json()['results']
         assert len(test_data) == len(titles) - 1, (
             'Проверьте, что DELETE-запрос администратора к '
-            '`/api/v1/titles/{title_id}/` удаляет произведение из базы данных.'
+            '`/api/v1/reviews/{title_id}/` удаляет произведение из базы данных.'
         )
 
     def test_04_titles_name_length_validation(self, admin_client):
         genres = create_genre(admin_client)
         categories = create_categories(admin_client)
-        url = '/api/v1/titles/'
+        url = '/api/v1/reviews/'
 
         data = {
             'name': 'It`s Over 9000!' + '!' * 242,
@@ -300,7 +300,7 @@ class Test04TitleAPI:
     def test_05_titles_check_permission(self, client, user_client,
                                         moderator_client, admin_client):
         titles, categories, genres = create_titles(admin_client)
-        url = '/api/v1/titles/'
+        url = '/api/v1/reviews/'
         data = {
             'name': 'Зловещие мертвецы',
             'year': 1981,
