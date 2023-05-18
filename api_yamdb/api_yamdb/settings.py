@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -25,6 +24,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'api',
     'reviews',
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -70,6 +70,8 @@ DATABASES = {
 
 
 # Password validation
+
+AUTH_USER_MODEL = "users.User"
 
 AUTH_PASSWORD_VALIDATORS = [
     {
