@@ -1,6 +1,5 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import filters
-from rest_framework import viewsets, mixins, permissions
+from rest_framework import filters, permissions, viewsets, mixins
 from rest_framework.pagination import LimitOffsetPagination
 
 from api import serializers
