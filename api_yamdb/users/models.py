@@ -12,7 +12,7 @@ class User(AbstractUser):
         max_length=20,
         choices=ROLES,
         blank=True,
-        null=True
+        null=True,
     )
     bio = models.TextField(
         verbose_name='Биография',

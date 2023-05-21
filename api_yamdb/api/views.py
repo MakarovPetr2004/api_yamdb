@@ -3,7 +3,8 @@ from rest_framework import filters, permissions, viewsets, mixins
 from rest_framework.pagination import LimitOffsetPagination
 
 from api import serializers
-from reviews.models import Category, Genre, Title, Review, User
+from reviews.models import Category, Genre, Title, Review, Comment
+from users.models import User
 
 from .filters import TitleFilter
 
@@ -49,6 +50,7 @@ class GenreViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.ReviewSerializer
+    pagination_class = LimitOffsetPagination
     permission_classes = (
         # Здесь Андрей добавит пермишены для отзывов
     )
@@ -60,4 +62,21 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return self.get_title().reviews
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user, post=self.get_title())
+        serializer.save(author=self.request.user, title=self.get_title())
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    serializer_class = serializers.CommentSerializer
+    pagination_class = LimitOffsetPagination
+    permission_classes = (
+        # Здесь Андрей добавит пермишены для комментариев
+    )
+
+    def get_review(self):
+        return get_object_or_404(Title, pk=self.kwargs.get('review_id'))
+
+    def get_queryset(self):
+        return self.get_review().comments
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user, review=self.get_review())

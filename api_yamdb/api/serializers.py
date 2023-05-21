@@ -3,7 +3,7 @@ import datetime as dt
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 
-from reviews.models import Title, Category, Genre, Review
+from reviews.models import Title, Category, Genre, Review, Comment
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -75,8 +75,13 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = '__all__'
-        read_only_fields = ('title', 'author')
+        fields = (
+            'id',
+            'text',
+            'author',
+            'score',
+            'pub_date'
+        )
 
     def validate_score(self, value):
         if value < 1 or value > 10:
@@ -84,3 +89,20 @@ class ReviewSerializer(serializers.ModelSerializer):
                 'Число не находиться в пределах от 1 до 10 включительно.'
             )
         return value
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True,
+    )
+
+    class Meta:
+        model = Comment
+        fields = (
+            'id',
+            'text',
+            'author',
+            'pub_date'
+        )
+
