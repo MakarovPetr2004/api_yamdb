@@ -27,6 +27,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 class CategoryViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
                       mixins.DestroyModelMixin, viewsets.GenericViewSet):
     queryset = Category.objects.all()
+    pagination_class = LimitOffsetPagination
     serializer_class = serializers.CategorySerializer
     permission_classes = (
         # Здесь Андрей добавит пермишены для категорий
@@ -39,6 +40,7 @@ class CategoryViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
 class GenreViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
                    mixins.DestroyModelMixin, viewsets.GenericViewSet):
     queryset = Genre.objects.all()
+    pagination_class = LimitOffsetPagination
     serializer_class = serializers.GenreSerializer
     permission_classes = (
         # Здесь Андрей добавит пермишены для жанров
@@ -46,7 +48,7 @@ class GenreViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
-    
+
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.ReviewSerializer
