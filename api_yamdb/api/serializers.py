@@ -1,5 +1,6 @@
 import datetime as dt
 
+from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 
@@ -13,7 +14,6 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class GenreSerializer(serializers.ModelSerializer):
-    
     class Meta:
         model = Genre
         exclude = ('id',)
@@ -29,7 +29,6 @@ class TitleSerializer(serializers.ModelSerializer):
         slug_field='slug',
         many=True
     )
-    rating = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Title
@@ -42,6 +41,13 @@ class TitleSerializer(serializers.ModelSerializer):
             'genre',
             'description',
         )
+        read_only_fields = ('rating',)
+
+    def get_rating(self, obj):
+        ratings_title = Review.objects.all().filter(title=obj.id)
+        if ratings_title:
+            return round(ratings_title.aggregate(Avg('score'))['score__avg'])
+        return None
 
     def validate_year(self, value):
         year = dt.date.today().year
@@ -53,7 +59,7 @@ class TitleSerializer(serializers.ModelSerializer):
 class TitleReadSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
-    rating = serializers.IntegerField(read_only=True)
+    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
@@ -66,8 +72,15 @@ class TitleReadSerializer(serializers.ModelSerializer):
             'genre',
             'description',
         )
-        
-        
+        read_only_fields = ('rating',)
+
+    def get_rating(self, obj):
+        ratings_title = Review.objects.all().filter(title=obj.id)
+        if ratings_title:
+            return round(ratings_title.aggregate(Avg('score'))['score__avg'])
+        return None
+
+
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         slug_field='username',
@@ -81,7 +94,7 @@ class ReviewSerializer(serializers.ModelSerializer):
             'text',
             'author',
             'score',
-            'pub_date'
+            'pub_date',
         )
 
     def validate_score(self, value):
@@ -106,4 +119,3 @@ class CommentSerializer(serializers.ModelSerializer):
             'author',
             'pub_date'
         )
-

@@ -19,6 +19,12 @@ class Title(models.Model):
     name = models.CharField('Название произведения', max_length=256)
     year = models.PositiveIntegerField('Год выпуска')
     description = models.TextField('Описание')
+    rating = models.IntegerField(
+        'Рейтинг произведения',
+        blank=True,
+        null=True,
+        validators=[validate_max_min]
+    )
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
@@ -40,11 +46,19 @@ class Review(models.Model):
         Title, on_delete=models.CASCADE, related_name='reviews')
     score = models.IntegerField(
         validators=[validate_max_min],
-        default=5
+        default=0,
     )
     text = models.TextField()
     pub_date = models.DateTimeField(
         'Дата добавления', auto_now_add=True, db_index=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['author', 'title'],
+                name='unique_author_title'
+            )
+        ]
 
 
 class Comment(models.Model):

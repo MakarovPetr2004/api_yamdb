@@ -1,11 +1,10 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import filters, permissions, viewsets, mixins
+from rest_framework import filters, viewsets, mixins, status
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.response import Response
 
 from api import serializers
-from reviews.models import Category, Genre, Title, Review, Comment
-from users.models import User
-
+from reviews.models import Category, Genre, Title, Review
 from .filters import TitleFilter
 
 
@@ -61,10 +60,24 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
 
     def get_queryset(self):
-        return self.get_title().reviews
+        return self.get_title().reviews.all()
 
-    def perform_create(self, serializer):
+    def create(self, request, *args, **kwargs):
+        existing_review = Review.objects.filter(
+            title=self.get_title(),
+            author=self.request.user
+        ).exists()
+        if existing_review:
+            return Response(
+                {'error': 'Вы уже оставили отзыв на это произведение.'},
+                status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.get_serializer(data=self.request.data)
+        serializer.is_valid(raise_exception=True)
         serializer.save(author=self.request.user, title=self.get_title())
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED,
+                        headers=headers)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -75,10 +88,10 @@ class CommentViewSet(viewsets.ModelViewSet):
     )
 
     def get_review(self):
-        return get_object_or_404(Title, pk=self.kwargs.get('review_id'))
+        return get_object_or_404(Review, pk=self.kwargs.get('review_id'))
 
     def get_queryset(self):
-        return self.get_review().comments
+        return self.get_review().comments.all()
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, review=self.get_review())
