@@ -1,8 +1,10 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import validate_email
 from django.db import models
 
 
 class User(AbstractUser):
+    email = models.EmailField(verbose_name='Email', unique=True, blank=False, validators=[validate_email])
     ROLES = (
         ('user', 'Пользователь'),
         ('moderator', 'Модератор'),
