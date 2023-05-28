@@ -1,10 +1,11 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import filters, viewsets, mixins, status
+from rest_framework import filters, mixins, status, viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
+from reviews.models import Category, Genre, Review, Title
 
 from api import serializers
-from reviews.models import Category, Genre, Title, Review
+
 from .filters import TitleFilter
 
 
