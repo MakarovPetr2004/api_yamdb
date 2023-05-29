@@ -1,10 +1,10 @@
-from api import serializers
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
+from api import serializers
 from reviews.models import Category, Genre, Review, Title
 from users.permission import AdminOrReadOnly, AuthorOrModerOrReadOnly
 
