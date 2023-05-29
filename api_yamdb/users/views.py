@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
 from users.models import User
+from users.permission import IsAdminUser
 from users.serializers import UserCreateSerializer, UserSerializer
 
 
@@ -16,6 +17,9 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     pagination_class = LimitOffsetPagination
+    permission_classes = (
+        IsAdminUser,
+    )
 
 
 @api_view(['POST'])
