@@ -1,6 +1,8 @@
 import random
 from string import digits
 
+from django.core.mail import send_mail
+from django.db.models import Q
 from rest_framework import status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import LimitOffsetPagination
@@ -25,15 +27,66 @@ class UserViewSet(viewsets.ModelViewSet):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def create_user(request):
+    username = request.data.get('username')
+    email = request.data.get('email')
+    existing_user = User.objects.filter(username=username).first()
+    response_status = status.HTTP_200_OK
+    if existing_user:
+        if existing_user.email != email:
+            return Response(
+                {'error': 'Email does not match the existing user.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        confirmation_code = ''.join(random.choices(digits, k=5))
+        existing_user.confirmation_code = confirmation_code
+        existing_user.save()
+    else:
+        existing_user_email = User.objects.filter(email=email).first()
+        if existing_user_email:
+            return Response(
+                {'error': 'User with this email already exists.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        confirmation_code = ''.join(random.choices(digits, k=5))
+        serializer = UserCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(confirmation_code=confirmation_code)
+
+    response_data = {
+        'username': username,
+        'email': email,
+    }
+
+    send_mail(
+        'Код подтверждения для API_YAMDB',
+        'Код подтверждения: ' + confirmation_code,
+        'from@example.com',
+        [email],
+        fail_silently=False,
+    )
+
+    return Response(response_data, status=response_status)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def createe_user(request):
     serializer = UserCreateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
 
     confirmation_code = ''.join(random.choices(digits, k=5))
     serializer.save(confirmation_code=confirmation_code)
+    email = request.data.get('email')
 
     response_data = serializer.data
-    response_data['confirmation_code'] = confirmation_code
-
+    send_mail(
+        'Код подтверждения для API_YAMDB',
+        'Код подтверждения: ' + confirmation_code,
+        'from@example.com',
+        [email],
+        fail_silently=False,
+    )
     return Response(response_data)
 
 
