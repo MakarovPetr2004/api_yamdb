@@ -3,8 +3,6 @@ from rest_framework.routers import DefaultRouter
 from users.views import UserViewSet, create_user, get_token
 
 from api import views
-from users.views import UserViewSet
-
 
 app_name = 'api'
 

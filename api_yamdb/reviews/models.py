@@ -1,8 +1,8 @@
 from django.db import models
-from django.contrib.auth import get_user_model
+
+from users.models import User
 
 from .validators import validate_max_min
-from users.models import User
 
 
 class Category(models.Model):
@@ -37,8 +37,35 @@ class Title(models.Model):
         related_name="titles",
         blank=True,
     )
-    
-    
+
+
+class Genre_title(models.Model):
+    title = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        related_name="titles",
+        blank=True,
+        null=True
+    )
+    genre = models.ForeignKey(
+        Genre,
+        on_delete=models.SET_NULL,
+        related_name="genres",
+        blank=True,
+        null=True
+    )
+
+    class Meta:
+        verbose_name = 'Жанр произведения'
+        verbose_name_plural = 'Жанры произведения'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['title', 'genre'],
+                name='unique_combination_gt'
+            )
+        ]
+
+
 class Review(models.Model):
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='reviews')
