@@ -1,8 +1,7 @@
 from django.db import models
-from django.contrib.auth import get_user_model
+from users.models import User
 
 from .validators import validate_max_min
-from users.models import User
 
 
 class Category(models.Model):
@@ -37,8 +36,8 @@ class Title(models.Model):
         related_name="titles",
         blank=True,
     )
-    
-    
+
+
 class Review(models.Model):
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='reviews')

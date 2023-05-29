@@ -2,14 +2,13 @@ import random
 from string import digits
 
 from django.core.mail import send_mail
-from django.db.models import Q
-from rest_framework import status, viewsets
+from rest_framework import filters, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import AccessToken
-
 from users.models import User
 from users.permission import IsAdminUser
 from users.serializers import UserCreateSerializer, UserSerializer
@@ -22,6 +21,26 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = (
         IsAdminUser,
     )
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('username',)
+    lookup_field = 'username'
+    http_method_names = ['get', 'post', 'patch', 'delete']
+
+
+class CurrentUserView(APIView):
+    def get(self, request):
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
+
+    def patch(self, request):
+        data = request.data.copy()
+        data.pop('role', None)  # remove 'role' from the request data
+        serializer = UserSerializer(request.user, data=data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
@@ -111,7 +130,6 @@ def get_token(request):
     user = User.objects.get(username=username)
 
     if user.confirmation_code != confirmation_code:
-
         return Response(
             'Неверный код подтверждения',
             status=status.HTTP_400_BAD_REQUEST

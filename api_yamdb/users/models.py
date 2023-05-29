@@ -4,7 +4,12 @@ from django.db import models
 
 
 class User(AbstractUser):
-    email = models.EmailField(verbose_name='Email', unique=True, blank=False, validators=[validate_email])
+    email = models.EmailField(
+        verbose_name='Email',
+        unique=True,
+        blank=False,
+        validators=[validate_email]
+    )
     ROLES = (
         ('user', 'Пользователь'),
         ('moderator', 'Модератор'),
