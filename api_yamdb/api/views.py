@@ -1,10 +1,12 @@
+from api import serializers
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-from reviews.models import Category, Genre, Review, Title
 
-from api import serializers
+from reviews.models import Category, Genre, Review, Title
+from users.permission import AdminOrReadOnly, AuthorOrModerOrReadOnly
 
 from .filters import TitleFilter
 
@@ -14,7 +16,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     pagination_class = LimitOffsetPagination
     serializer_class = serializers.TitleSerializer
     permission_classes = (
-        # Здесь Андрей добавит пермишены для произведений
+        AdminOrReadOnly,
     )
     filterset_class = TitleFilter
 
@@ -30,7 +32,7 @@ class CategoryViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
     pagination_class = LimitOffsetPagination
     serializer_class = serializers.CategorySerializer
     permission_classes = (
-        # Здесь Андрей добавит пермишены для категорий
+        AdminOrReadOnly,
     )
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
@@ -43,7 +45,7 @@ class GenreViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
     pagination_class = LimitOffsetPagination
     serializer_class = serializers.GenreSerializer
     permission_classes = (
-        # Здесь Андрей добавит пермишены для жанров
+        AdminOrReadOnly,
     )
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
@@ -54,7 +56,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.ReviewSerializer
     pagination_class = LimitOffsetPagination
     permission_classes = (
-        # Здесь Андрей добавит пермишены для отзывов
+        AuthorOrModerOrReadOnly,
+        IsAuthenticatedOrReadOnly,
     )
 
     def get_title(self):
@@ -85,7 +88,8 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.CommentSerializer
     pagination_class = LimitOffsetPagination
     permission_classes = (
-        # Здесь Андрей добавит пермишены для комментариев
+        AuthorOrModerOrReadOnly,
+        IsAuthenticatedOrReadOnly,
     )
 
     def get_review(self):
