@@ -1,6 +1,6 @@
 from django.db import models
-from users.models import User
 
+from users.models import User
 from .validators import validate_max_min
 
 
@@ -36,6 +36,33 @@ class Title(models.Model):
         related_name="titles",
         blank=True,
     )
+
+
+class Genre_title(models.Model):
+    title = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        related_name="titles",
+        blank=True,
+        null=True
+    )
+    genre = models.ForeignKey(
+        Genre,
+        on_delete=models.SET_NULL,
+        related_name="genres",
+        blank=True,
+        null=True
+    )
+
+    class Meta:
+        verbose_name = 'Жанр произведения'
+        verbose_name_plural = 'Жанры произведения'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['title', 'genre'],
+                name='unique_combination_gt'
+            )
+        ]
 
 
 class Review(models.Model):
