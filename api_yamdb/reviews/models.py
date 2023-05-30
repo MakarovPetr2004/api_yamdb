@@ -1,7 +1,6 @@
 from django.db import models
 
 from users.models import User
-
 from .validators import validate_max_min
 
 
@@ -19,12 +18,6 @@ class Title(models.Model):
     name = models.CharField('Название произведения', max_length=256)
     year = models.PositiveIntegerField('Год выпуска')
     description = models.TextField('Описание')
-    rating = models.IntegerField(
-        'Рейтинг произведения',
-        blank=True,
-        null=True,
-        validators=[validate_max_min]
-    )
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
@@ -73,7 +66,7 @@ class Review(models.Model):
         Title, on_delete=models.CASCADE, related_name='reviews')
     score = models.IntegerField(
         validators=[validate_max_min],
-        default=0,
+        default=1,
     )
     text = models.TextField()
     pub_date = models.DateTimeField(

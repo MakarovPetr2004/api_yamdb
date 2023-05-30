@@ -17,11 +17,12 @@ class TitleFilter(FilterSet):
         field_name='name',
         lookup_expr='contains'
     )
-    year = django_filters.NumberFilter(
-        field_name='year',
-        lookup_expr='contains'
-    )
 
     class Meta:
         model = Title
-        fields = '__all__'
+        fields = (
+            'category',
+            'genre',
+            'name',
+            'year',
+        )

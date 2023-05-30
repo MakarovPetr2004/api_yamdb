@@ -8,7 +8,6 @@ class User(AbstractUser):
         verbose_name='Email',
         unique=True,
         blank=False,
-        validators=[validate_email]
     )
     ROLES = (
         ('user', 'Пользователь'),
