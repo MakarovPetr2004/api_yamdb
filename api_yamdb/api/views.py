@@ -19,6 +19,7 @@ class TitleViewSet(viewsets.ModelViewSet):
         AdminOrReadOnly,
     )
     filterset_class = TitleFilter
+    ordering_fields = ['__all__']
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
@@ -26,28 +27,25 @@ class TitleViewSet(viewsets.ModelViewSet):
         return serializers.TitleSerializer
 
 
-class CategoryViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
-                      mixins.DestroyModelMixin, viewsets.GenericViewSet):
-    queryset = Category.objects.all()
+class BaseClassViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
+                       mixins.DestroyModelMixin, viewsets.GenericViewSet):
     pagination_class = LimitOffsetPagination
-    serializer_class = serializers.CategorySerializer
     permission_classes = (
         AdminOrReadOnly,
     )
     filter_backends = (filters.SearchFilter,)
+
+
+class CategoryViewSet(BaseClassViewSet):
+    queryset = Category.objects.all()
+    serializer_class = serializers.CategorySerializer
     search_fields = ('name',)
     lookup_field = 'slug'
 
 
-class GenreViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
-                   mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class GenreViewSet(BaseClassViewSet):
     queryset = Genre.objects.all()
-    pagination_class = LimitOffsetPagination
     serializer_class = serializers.GenreSerializer
-    permission_classes = (
-        AdminOrReadOnly,
-    )
-    filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
 
