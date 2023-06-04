@@ -5,7 +5,7 @@ from users.models import User
 from .validators import validate_max_min, validate_year
 
 
-class BaseClass(models.Model):
+class CategoryGenreClass(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(unique=True, max_length=50)
 
@@ -17,15 +17,15 @@ class BaseClass(models.Model):
         return self.name
 
 
-class Category(BaseClass):
+class Category(CategoryGenreClass):
 
-    class Meta(BaseClass.Meta):
+    class Meta(CategoryGenreClass.Meta):
         verbose_name = 'Категория'
 
 
-class Genre(BaseClass):
+class Genre(CategoryGenreClass):
 
-    class Meta(BaseClass.Meta):
+    class Meta(CategoryGenreClass.Meta):
         verbose_name = 'Жанр'
 
 

@@ -19,7 +19,7 @@ class TitleViewSet(viewsets.ModelViewSet):
         AdminOrReadOnly,
     )
     filterset_class = TitleFilter
-    ordering_fields = ['__all__']
+    ordering_fields = ['year']
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
