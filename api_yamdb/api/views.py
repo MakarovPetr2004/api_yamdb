@@ -1,3 +1,4 @@
+from django.db.models import Avg, IntegerField
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.pagination import LimitOffsetPagination
@@ -7,7 +8,6 @@ from rest_framework.response import Response
 from api import serializers
 from reviews.models import Category, Genre, Review, Title
 from users.permission import AdminOrReadOnly, AuthorOrModerOrReadOnly
-
 from .filters import TitleFilter
 
 
@@ -24,6 +24,13 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.action in ('list', 'retrieve'):
             return serializers.TitleReadSerializer
         return serializers.TitleSerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.annotate(
+            rating=Avg('reviews__score', output_field=IntegerField())
+        )
+        return queryset
 
 
 class CategoryViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
@@ -66,22 +73,24 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return self.get_title().reviews.all()
 
-    def create(self, request, *args, **kwargs):
-        existing_review = Review.objects.filter(
-            title=self.get_title(),
-            author=self.request.user
-        ).exists()
-        if existing_review:
-            return Response(
-                {'error': 'Вы уже оставили отзыв на это произведение.'},
-                status=status.HTTP_400_BAD_REQUEST)
-
-        serializer = self.get_serializer(data=self.request.data)
-        serializer.is_valid(raise_exception=True)
+    def perform_create(self, serializer):
         serializer.save(author=self.request.user, title=self.get_title())
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED,
-                        headers=headers)
+    # def create(self, request, *args, **kwargs):
+    #     existing_review = Review.objects.filter(
+    #         title=self.get_title(),
+    #         author=self.request.user
+    #     ).exists()
+    #     if existing_review:
+    #         return Response(
+    #             {'error': 'Вы уже оставили отзыв на это произведение.'},
+    #             status=status.HTTP_400_BAD_REQUEST)
+    #
+    #     serializer = self.get_serializer(data=self.request.data)
+    #     serializer.is_valid(raise_exception=True)
+    #     serializer.save(author=self.request.user, title=self.get_title())
+    #     headers = self.get_success_headers(serializer.data)
+    #     return Response(serializer.data, status=status.HTTP_201_CREATED,
+    #                     headers=headers)
 
 
 class CommentViewSet(viewsets.ModelViewSet):

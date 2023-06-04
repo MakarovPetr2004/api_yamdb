@@ -8,6 +8,7 @@ class User(AbstractUser):
         verbose_name='Email',
         unique=True,
         blank=False,
+        max_length=254,
     )
     ROLES = (
         ('user', 'Пользователь'),
@@ -15,6 +16,7 @@ class User(AbstractUser):
         ('admin', 'Администратор'),
     )
     role = models.CharField(
+        verbose_name='Роль',
         max_length=20,
         choices=ROLES,
         blank=True,
@@ -31,3 +33,4 @@ class User(AbstractUser):
         verbose_name='Код подтверждения',
         blank=True
     )
+
