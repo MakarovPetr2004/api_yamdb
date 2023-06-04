@@ -2,7 +2,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from api import views
-from users.views import CurrentUserView, UserViewSet, create_user, get_token
+from users.views import UserViewSet, create_user, get_token
 
 app_name = 'api'
 
@@ -26,6 +26,5 @@ urlpatterns = [
 
     path('v1/auth/signup/', create_user, name='create_user'),
     path('v1/auth/token/', get_token, name='get_token'),
-    path('v1/users/me/', CurrentUserView.as_view()),
     path('v1/', include(router_v1.urls)),
 ]
