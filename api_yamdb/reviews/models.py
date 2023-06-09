@@ -32,7 +32,7 @@ class Genre(CategoryGenreClass):
 class Title(models.Model):
     name = models.CharField('Название произведения',
                             max_length=256)
-    year = models.IntegerField(
+    year = models.PositiveSmallIntegerField(
         'Год выпуска',
         validators=[validate_year],
         db_index=True
