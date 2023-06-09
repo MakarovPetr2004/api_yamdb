@@ -10,7 +10,10 @@ from reviews.models import Category, Comment, Genre, Review, Title
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        exclude = ('id',)
+        fields = (
+            'name',
+            'slug',
+        )
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -27,7 +30,7 @@ class TitleSerializer(serializers.ModelSerializer):
     genre = SlugRelatedField(
         queryset=Genre.objects.all(),
         slug_field='slug',
-        many=True
+        many=True,
     )
     rating = serializers.IntegerField(read_only=True)
 
@@ -48,6 +51,14 @@ class TitleSerializer(serializers.ModelSerializer):
         if value > dt.date.today().year:
             raise serializers.ValidationError('Проверьте год произведения!')
         return value
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['category'] = CategorySerializer(instance.category).data
+        representation['genre'] = GenreSerializer(
+            instance.genre.all(), many=True
+        ).data
+        return representation
 
 
 class TitleReadSerializer(serializers.ModelSerializer):
