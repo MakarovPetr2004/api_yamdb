@@ -1,5 +1,3 @@
-import datetime as dt
-
 from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
@@ -48,12 +46,6 @@ class TitleSerializer(serializers.ModelSerializer):
         if ratings_title:
             return round(ratings_title.aggregate(Avg('score'))['score__avg'])
         return None
-
-    def validate_year(self, value):
-        year = dt.date.today().year
-        if not (value < year):
-            raise serializers.ValidationError('Проверьте год произведения!')
-        return value
 
 
 class TitleReadSerializer(serializers.ModelSerializer):

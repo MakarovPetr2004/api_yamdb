@@ -2,24 +2,43 @@ from django.db import models
 
 from users.models import User
 
-from .validators import validate_max_min
+from .validators import validate_max_min, validate_year
 
 
-class Category(models.Model):
+class CategoryGenreClass(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(unique=True, max_length=50)
 
+    class Meta:
+        abstract = True
+        ordering = ['name']
 
-class Genre(models.Model):
-    name = models.CharField(max_length=256)
-    slug = models.SlugField(unique=True)
+    def __str__(self):
+        return self.name
+
+
+class Category(CategoryGenreClass):
+
+    class Meta(CategoryGenreClass.Meta):
+        verbose_name = 'Категория'
+
+
+class Genre(CategoryGenreClass):
+
+    class Meta(CategoryGenreClass.Meta):
+        verbose_name = 'Жанр'
 
 
 class Title(models.Model):
-    name = models.CharField('Название произведения', max_length=256)
-    year = models.PositiveIntegerField('Год выпуска')
+    name = models.CharField('Название произведения',
+                            max_length=256)
+    year = models.PositiveSmallIntegerField(
+        'Год выпуска',
+        validators=[validate_year],
+        db_index=True
+    )
     description = models.TextField('Описание')
-    rating = models.IntegerField(
+    rating = models.PositiveSmallIntegerField(
         'Рейтинг произведения',
         blank=True,
         null=True,
@@ -28,13 +47,16 @@ class Title(models.Model):
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
-        related_name="titles",
+        related_name='titles',
+        verbose_name='Категория',
         blank=True,
         null=True
     )
     genre = models.ManyToManyField(
         Genre,
-        related_name="titles",
+        through='Genre_title',
+        related_name='titles',
+        verbose_name='Жанр',
         blank=True,
     )
 
@@ -43,21 +65,20 @@ class Genre_title(models.Model):
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
-        related_name="titles",
+        related_name='titles',
         blank=True,
         null=True
     )
     genre = models.ForeignKey(
         Genre,
         on_delete=models.SET_NULL,
-        related_name="genres",
+        related_name='genres',
         blank=True,
         null=True
     )
 
     class Meta:
         verbose_name = 'Жанр произведения'
-        verbose_name_plural = 'Жанры произведения'
         constraints = [
             models.UniqueConstraint(
                 fields=['title', 'genre'],
