@@ -1,9 +1,8 @@
-from django.db.models import Avg, IntegerField
+from django.db.models import Avg, PositiveSmallIntegerField
 from django.shortcuts import get_object_or_404
-from rest_framework import filters, mixins, status, viewsets
+from rest_framework import filters, mixins, viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from rest_framework.response import Response
 
 from api import serializers
 from reviews.models import Category, Genre, Review, Title
@@ -29,7 +28,10 @@ class TitleViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = super().get_queryset()
         queryset = queryset.annotate(
-            rating=Avg('reviews__score', output_field=IntegerField())
+            rating=Avg(
+                'reviews__score',
+                output_field=PositiveSmallIntegerField()
+            )
         )
         return queryset
 

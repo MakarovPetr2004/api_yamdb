@@ -30,6 +30,7 @@ class Genre(CategoryGenreClass):
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
+
 class Title(models.Model):
     name = models.CharField(
         'Название произведения',
@@ -41,12 +42,6 @@ class Title(models.Model):
         db_index=True
     )
     description = models.TextField('Описание')
-    rating = models.PositiveSmallIntegerField(
-        'Рейтинг произведения',
-        blank=True,
-        null=True,
-        validators=[validate_max_min]
-    )
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
