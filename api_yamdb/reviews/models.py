@@ -1,51 +1,63 @@
 from django.db import models
-from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
-from django.contrib.contenttypes.models import ContentType
 
 from . import const
 from users.models import User
-from .validators import validate_max_min
+from .validators import validate_max_min, validate_year
 
 
-class Category(models.Model):
-    name = models.CharField(max_length=const.MAX_LEN_NAMES)
-    slug = models.SlugField(unique=True, max_length=const.MAX_LEN_SLUG)
+class CategoryGenreClass(models.Model):
+    name = models.CharField(max_length=256)
+    slug = models.SlugField(unique=True, max_length=50)
 
     class Meta:
+        abstract = True
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class Category(CategoryGenreClass):
+
+    class Meta(CategoryGenreClass.Meta):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
-    def __str__(self):
-        return self.name
 
+class Genre(CategoryGenreClass):
 
-class Genre(models.Model):
-    name = models.CharField(max_length=const.MAX_LEN_NAMES)
-    slug = models.SlugField(unique=True, max_length=const.MAX_LEN_SLUG)
-
-    class Meta:
+    class Meta(CategoryGenreClass.Meta):
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
-
-    def __str__(self):
-        return self.name
-
 
 class Title(models.Model):
     name = models.CharField(
         'Название произведения',
-        max_length=const.MAX_LEN_NAMES
+        max_length=256
     )
-    year = models.PositiveIntegerField('Год выпуска')
+    year = models.PositiveSmallIntegerField(
+        'Год выпуска',
+        validators=[validate_year],
+        db_index=True
+    )
     description = models.TextField('Описание')
+    rating = models.PositiveSmallIntegerField(
+        'Рейтинг произведения',
+        blank=True,
+        null=True,
+        validators=[validate_max_min]
+    )
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
+        verbose_name='Категория',
         blank=True,
         null=True
     )
     genre = models.ManyToManyField(
         Genre,
+        through='Genre_title',
+        verbose_name='Жанр',
         blank=True,
     )
 

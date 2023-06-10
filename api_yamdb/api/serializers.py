@@ -1,3 +1,4 @@
+from django.db.models import Avg
 import datetime as dt
 
 from django.shortcuts import get_object_or_404
@@ -10,10 +11,7 @@ from reviews.models import Category, Comment, Genre, Review, Title
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = (
-            'name',
-            'slug',
-        )
+        exclude = ('id',)
 
 
 class GenreSerializer(serializers.ModelSerializer):
