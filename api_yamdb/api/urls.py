@@ -22,10 +22,16 @@ router_v1.register(
     basename='comments'
 )
 
-urlpatterns = [
+prefix_ver = 'v1/'
+prefix_auth = 'auth/'
 
-    path('v1/auth/signup/', create_user, name='create_user'),
-    path('v1/auth/token/', get_token, name='get_token'),
-    path('v1/users/me/', CurrentUserView.as_view()),
-    path('v1/', include(router_v1.urls)),
+urlpatterns = [
+    path(
+        prefix_ver + prefix_auth + 'signup/',
+        create_user,
+        name='create_user'
+    ),
+    path(prefix_ver + prefix_auth + 'token/', get_token, name='get_token'),
+    path(prefix_ver + 'users/me/', CurrentUserView.as_view()),
+    path(prefix_ver, include(router_v1.urls)),
 ]
