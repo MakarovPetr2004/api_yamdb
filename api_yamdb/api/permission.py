@@ -5,18 +5,20 @@ class IsAdminUser(BasePermission):
     def has_permission(self, request, view):
         return (
             request.user.is_authenticated and (
-                request.user.role == 'admin' or request.user.is_superuser
+                request.user.is_admin
             )
         )
 
 
 class AdminOrReadOnly(BasePermission):
     def has_permission(self, request, view):
-        if request.user.is_superuser:
-            return True
-        if request.method in SAFE_METHODS:
-            return True
-        return request.user.is_authenticated and request.user.role == 'admin'
+        return (
+            request.method in SAFE_METHODS or (
+                request.user.is_authenticated and (
+                    request.user.is_admin
+                )
+            )
+        )
 
 
 class AuthorOrModerOrReadOnly(BasePermission):

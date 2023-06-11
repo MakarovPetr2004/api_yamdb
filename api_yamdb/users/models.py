@@ -1,34 +1,58 @@
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import validate_email
 from django.db import models
+
+from users.constants import (ADMIN_ROLE, CONFIRMATION_CODE_LENGTH,
+                             MAX_USERNAME_LENGTH, MODERATOR_ROLE, USER_ROLE)
+from users.validators import no_me_validator, regex_validator
 
 
 class User(AbstractUser):
+    class Meta:
+        verbose_name = 'Пользователь'
+        ordering = ['username']
+
     email = models.EmailField(
         verbose_name='Email',
         unique=True,
         blank=False,
-        validators=[validate_email]
+    )
+    username = models.CharField(
+        verbose_name='Username',
+        max_length=MAX_USERNAME_LENGTH,
+        unique=True,
+        blank=False,
+        validators=[regex_validator, no_me_validator],
     )
     ROLES = (
-        ('user', 'Пользователь'),
-        ('moderator', 'Модератор'),
-        ('admin', 'Администратор'),
+        (USER_ROLE, 'Пользователь'),
+        (MODERATOR_ROLE, 'Модератор'),
+        (ADMIN_ROLE, 'Администратор'),
     )
     role = models.CharField(
-        max_length=20,
+        max_length=max(len(label) for _, label in ROLES),
         choices=ROLES,
         blank=True,
         null=True,
-        default='user',
+        default=USER_ROLE,
+        verbose_name='Роль'
     )
     bio = models.TextField(
         verbose_name='Биография',
-        max_length=1024,
         blank=True
     )
     confirmation_code = models.CharField(
-        max_length=5,
+        max_length=CONFIRMATION_CODE_LENGTH,
         verbose_name='Код подтверждения',
         blank=True
     )
+
+    def __str__(self):
+        return self.username
+
+    @property
+    def is_admin(self):
+        return self.is_superuser or self.is_staff or self.role == 'admin'
+
+    @property
+    def is_moderator(self):
+        return self.role == 'moderator'
