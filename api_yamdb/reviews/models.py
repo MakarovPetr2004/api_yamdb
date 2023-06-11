@@ -1,6 +1,5 @@
 from django.db import models
 
-from . import const
 from users.models import User
 from .validators import validate_max_min, validate_year
 

@@ -1,4 +1,3 @@
-from django.db.models import Avg
 import datetime as dt
 
 from django.shortcuts import get_object_or_404
@@ -6,6 +5,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import NotFound
 from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueValidator
+
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.constants import MAX_EMAIL_LENGTH, MAX_USERNAME_LENGTH
 from users.models import User

@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+
 from users.constants import (ADMIN_ROLE, CONFIRMATION_CODE_LENGTH,
                              MAX_USERNAME_LENGTH, MODERATOR_ROLE, USER_ROLE)
 from users.validators import no_me_validator, regex_validator
