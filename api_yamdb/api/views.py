@@ -1,19 +1,19 @@
 import random
 from string import digits
-
-from api import serializers
 from django.core.mail import send_mail
+from django.db.models import Avg, PositiveSmallIntegerField
 from django.shortcuts import get_object_or_404
-from rest_framework import filters, mixins, status, viewsets
+from rest_framework import filters, mixins, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
-from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.response import Response
+
+from api import serializers
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
-
 from .filters import TitleFilter
 from .permission import AdminOrReadOnly, AuthorOrModerOrReadOnly, IsAdminUser
 from .serializers import (EmailMatchSerializer, GetTokenSerializer,
@@ -28,35 +28,43 @@ class TitleViewSet(viewsets.ModelViewSet):
         AdminOrReadOnly,
     )
     filterset_class = TitleFilter
+    ordering_fields = ['year']
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
             return serializers.TitleReadSerializer
         return serializers.TitleSerializer
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.annotate(
+            rating=Avg(
+                'reviews__score',
+                output_field=PositiveSmallIntegerField()
+            )
+        )
+        return queryset
 
-class CategoryViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
-                      mixins.DestroyModelMixin, viewsets.GenericViewSet):
-    queryset = Category.objects.all()
+
+class BaseClassViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
+                       mixins.DestroyModelMixin, viewsets.GenericViewSet):
     pagination_class = LimitOffsetPagination
-    serializer_class = serializers.CategorySerializer
     permission_classes = (
         AdminOrReadOnly,
     )
     filter_backends = (filters.SearchFilter,)
+
+
+class CategoryViewSet(BaseClassViewSet):
+    queryset = Category.objects.all()
+    serializer_class = serializers.CategorySerializer
     search_fields = ('name',)
     lookup_field = 'slug'
 
 
-class GenreViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
-                   mixins.DestroyModelMixin, viewsets.GenericViewSet):
+class GenreViewSet(BaseClassViewSet):
     queryset = Genre.objects.all()
-    pagination_class = LimitOffsetPagination
     serializer_class = serializers.GenreSerializer
-    permission_classes = (
-        AdminOrReadOnly,
-    )
-    filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
 
@@ -75,22 +83,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return self.get_title().reviews.all()
 
-    def create(self, request, *args, **kwargs):
-        existing_review = Review.objects.filter(
-            title=self.get_title(),
-            author=self.request.user
-        ).exists()
-        if existing_review:
-            return Response(
-                {'error': 'Вы уже оставили отзыв на это произведение.'},
-                status=status.HTTP_400_BAD_REQUEST)
-
-        serializer = self.get_serializer(data=self.request.data)
-        serializer.is_valid(raise_exception=True)
+    def perform_create(self, serializer):
         serializer.save(author=self.request.user, title=self.get_title())
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED,
-                        headers=headers)
 
 
 class CommentViewSet(viewsets.ModelViewSet):

@@ -20,9 +20,19 @@ router_v1.register(
     basename='comments'
 )
 
-urlpatterns = [
+prefix_ver = 'v1/'
+prefix_auth = 'auth/'
 
-    path('v1/auth/signup/', views.create_user, name='create_user'),
-    path('v1/auth/token/', views.get_token, name='get_token'),
-    path('v1/', include(router_v1.urls)),
+urlpatterns = [
+    path(
+        prefix_ver + prefix_auth + 'signup/',
+        views.create_user,
+        name='create_user'
+    ),
+    path(
+        prefix_ver + prefix_auth + 'token/',
+        views.get_token,
+        name='get_token'
+    ),
+    path(prefix_ver, include(router_v1.urls)),
 ]
