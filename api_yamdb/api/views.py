@@ -22,7 +22,12 @@ from .serializers import (EmailMatchSerializer, GetTokenSerializer,
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.all().annotate(
+        rating=Avg(
+            'reviews__score',
+            output_field=PositiveSmallIntegerField()
+        )
+    )
     pagination_class = LimitOffsetPagination
     serializer_class = serializers.TitleSerializer
     permission_classes = (
@@ -35,16 +40,6 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.action in ('list', 'retrieve'):
             return serializers.TitleReadSerializer
         return serializers.TitleSerializer
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        queryset = queryset.annotate(
-            rating=Avg(
-                'reviews__score',
-                output_field=PositiveSmallIntegerField()
-            )
-        )
-        return queryset
 
 
 class BaseClassViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
