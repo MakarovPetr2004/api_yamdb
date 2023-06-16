@@ -46,7 +46,6 @@ class TitleSerializer(serializers.ModelSerializer):
             'genre',
             'description',
         )
-        read_only_fields = ('rating',)
 
     def validate_year(self, value):
         if value > dt.date.today().year:
@@ -54,17 +53,13 @@ class TitleSerializer(serializers.ModelSerializer):
         return value
 
     def to_representation(self, instance):
-        representation = TitleReadSerializer(instance)
-        # representation['category'] = CategorySerializer(instance.category).data
-        # representation['genre'] = GenreSerializer(
-        #     instance.genre.all(), many=True
-        # ).data
-        return representation
+        return TitleReadSerializer(instance).data
 
 
 class TitleReadSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
+    rating = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Title
@@ -72,6 +67,7 @@ class TitleReadSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'year',
+            'rating',
             'category',
             'genre',
             'description',
@@ -145,14 +141,14 @@ class UserSerializer(UsernameValidationMixin, serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = [
+        fields = (
             'username',
             'email',
             'first_name',
             'last_name',
             'bio',
             'role'
-        ]
+        )
 
 
 class UserCreateSerializer(
