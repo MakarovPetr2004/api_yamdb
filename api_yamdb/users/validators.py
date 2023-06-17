@@ -2,7 +2,7 @@ import re
 
 from rest_framework.exceptions import ValidationError
 
-from users.constants import USERNAME_PATTERN
+from constants import USERNAME_PATTERN
 
 
 def regex_validator(value):
