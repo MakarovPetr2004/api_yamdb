@@ -124,9 +124,7 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated]
     )
     def me(self, request):
-        if request.method == 'GET':
-            serializer = self.get_serializer(request.user)
-            return Response(serializer.data)
+        serializer = self.get_serializer(request.user)
         if request.method == 'PATCH':
             data = request.data.copy()
             data.pop('role', None)
@@ -135,14 +133,14 @@ class UserViewSet(viewsets.ModelViewSet):
                 data=data,
                 partial=True
             )
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
+            if not serializer.is_valid():
+                return Response(
+                    serializer.errors,
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            serializer.save()
+        return Response(serializer.data)
 
-            return Response(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST
-            )
 
 
 @api_view(['POST'])
