@@ -4,26 +4,26 @@ from users.models import User
 from .validators import validate_max_min, validate_year
 
 
-class CategoryGenreClass(models.Model):
+class NameSlugClass(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(unique=True, max_length=50)
 
     class Meta:
         abstract = True
-        ordering = ['name']
+        ordering = ('name',)
 
     def __str__(self):
         return self.name
 
 
-class Category(CategoryGenreClass):
-    class Meta(CategoryGenreClass.Meta):
+class Category(NameSlugClass):
+    class Meta(NameSlugClass.Meta):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
 
-class Genre(CategoryGenreClass):
-    class Meta(CategoryGenreClass.Meta):
+class Genre(NameSlugClass):
+    class Meta(NameSlugClass.Meta):
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
@@ -54,6 +54,7 @@ class Title(models.Model):
     )
 
     class Meta:
+        ordering = ('name',)
         default_related_name = 'titles'
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
