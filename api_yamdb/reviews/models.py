@@ -17,14 +17,12 @@ class NameSlugClass(models.Model):
 
 
 class Category(NameSlugClass):
-
     class Meta(NameSlugClass.Meta):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
 
 class Genre(NameSlugClass):
-
     class Meta(NameSlugClass.Meta):
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
@@ -92,7 +90,7 @@ class Genre_title(models.Model):
         ]
 
 
-class AbstractCommentReview(models.Model):
+class AuthorTextPubDate(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE
@@ -112,8 +110,8 @@ class AbstractCommentReview(models.Model):
         return f'{self.author} в {self.pub_date} написал: {self.text}'
 
 
-class Review(AbstractCommentReview):
-    score = models.SmallIntegerField(
+class Review(AuthorTextPubDate):
+    score = models.PositiveSmallIntegerField(
         'Оценка',
         validators=[validate_max_min],
         default=1,
@@ -123,7 +121,7 @@ class Review(AbstractCommentReview):
         on_delete=models.CASCADE
     )
 
-    class Meta(AbstractCommentReview.Meta):
+    class Meta(AuthorTextPubDate.Meta):
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         default_related_name = 'reviews'
@@ -135,13 +133,13 @@ class Review(AbstractCommentReview):
         ]
 
 
-class Comment(AbstractCommentReview):
+class Comment(AuthorTextPubDate):
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
     )
 
-    class Meta(AbstractCommentReview.Meta):
+    class Meta(AuthorTextPubDate.Meta):
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
         default_related_name = 'comments'
