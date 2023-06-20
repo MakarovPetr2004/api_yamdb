@@ -6,6 +6,7 @@ from django.db.models import Avg, PositiveSmallIntegerField
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, mixins, viewsets, status
 from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
@@ -133,7 +134,9 @@ class UserViewSet(viewsets.ModelViewSet):
                 data=data,
                 partial=True
             )
-            if not serializer.is_valid():
+            try:
+                serializer.is_valid(raise_exception=True)
+            except ValidationError:
                 return Response(
                     serializer.errors,
                     status=status.HTTP_400_BAD_REQUEST
