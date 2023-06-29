@@ -4,7 +4,7 @@ from users.models import User
 from .validators import validate_max_min, validate_year
 
 
-class NameSlugClass(models.Model):
+class NameSlug(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(unique=True, max_length=50)
 
@@ -16,16 +16,16 @@ class NameSlugClass(models.Model):
         return self.name
 
 
-class Category(NameSlugClass):
+class Category(NameSlug):
 
-    class Meta(NameSlugClass.Meta):
+    class Meta(NameSlug.Meta):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
 
-class Genre(NameSlugClass):
+class Genre(NameSlug):
 
-    class Meta(NameSlugClass.Meta):
+    class Meta(NameSlug.Meta):
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
