@@ -6,7 +6,7 @@ from django.db.models import Avg, PositiveSmallIntegerField
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, mixins, viewsets, status
 from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, NotFound
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
@@ -18,7 +18,7 @@ from reviews.models import Category, Genre, Review, Title
 from users.models import User
 from .filters import TitleFilter
 from .permission import AdminOrReadOnly, AuthorOrModerOrReadOnly, IsAdminUser
-from .serializers import (EmailMatchSerializer, GetTokenSerializer,
+from .serializers import (GetTokenSerializer,
                           UserCreateSerializer, UserSerializer)
 
 
@@ -156,14 +156,12 @@ def create_user(request):
 
     response_status = status.HTTP_200_OK
     if existing_user:
-        serializer = EmailMatchSerializer(
-            data=request.data,
-            context={'user': existing_user}
-        )
-        serializer.is_valid(raise_exception=True)
-        confirmation_code = ''.join(random.choices(digits, k=5))
-        existing_user.confirmation_code = confirmation_code
-        existing_user.save()
+        if existing_user.email == email:
+            confirmation_code = ''.join(random.choices(digits, k=5))
+            existing_user.confirmation_code = confirmation_code
+            existing_user.save()
+        else:
+            return Response(request.data, status=status.HTTP_400_BAD_REQUEST)
     else:
         serializer = UserCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -189,10 +187,21 @@ def create_user(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def get_token(request):
+    username = request.data.get('username')
+    confirmation_code = request.data.get('confirmation_code')
+
+    user = User.objects.filter(username=username).first()
+
+    if username is None:
+        return Response({'detail': 'Поле "username" обязательно'}, status=status.HTTP_400_BAD_REQUEST)
+    if user is None:
+        return Response({'detail': 'Имя пользователя не найдено'}, status=status.HTTP_404_NOT_FOUND)
+    if user.confirmation_code != confirmation_code:
+        return Response({'detail': 'Неверный код подтверждения'}, status=status.HTTP_400_BAD_REQUEST)
+
     serializer = GetTokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
 
-    user = serializer.validated_data['user']
     token = AccessToken.for_user(user)
 
-    return Response({'token': str(token)})
+    return Response({'token': str(token)}, status=status.HTTP_200_OK)

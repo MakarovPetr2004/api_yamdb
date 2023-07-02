@@ -188,36 +188,17 @@ class UserCreateSerializer(
 
         return data
 
+    def create(self, validated_data):
+        username = validated_data.get('username')
+        email = validated_data.get('email')
+
+        user = User.objects.create(username=username, email=email)
+
+        return user
+
 
 class GetTokenSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
     confirmation_code = serializers.CharField(required=True)
 
-    def validate(self, attrs):
-        username = attrs.get('username')
-        confirmation_code = attrs.get('confirmation_code')
 
-        user = User.objects.filter(username=username).first()
-
-        if user is None:
-            raise NotFound('Имя пользователя не найдено')
-
-        if user.confirmation_code != confirmation_code:
-            raise serializers.ValidationError('Неверный код подтверждения')
-
-        attrs['user'] = user
-        return attrs
-
-
-class EmailMatchSerializer(serializers.Serializer):
-    email = serializers.EmailField(required=True)
-
-    def validate_email(self, value):
-        user = self.context.get('user')
-
-        if user.email != value:
-            raise serializers.ValidationError(
-                'Email does not match the existing user.'
-            )
-
-        return value
