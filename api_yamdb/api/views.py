@@ -145,34 +145,22 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def create_user(request):
-    username = request.data.get('username')
-    email = request.data.get('email')
+    serializer = UserCreateSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
 
-    existing_user = User.objects.filter(username=username).first()
+    username = serializer.validated_data['username']
+    email = serializer.validated_data['email']
+    confirmation_code = ''.join(random.choices(digits, k=5))
+    serializer.save(confirmation_code=confirmation_code)
 
     response_status = status.HTTP_200_OK
-    if existing_user:
-        if existing_user.email == email:
-            confirmation_code = ''.join(random.choices(digits, k=5))
-            existing_user.confirmation_code = confirmation_code
-            existing_user.save()
-        else:
-            return Response(request.data, status=status.HTTP_400_BAD_REQUEST)
-    else:
-        serializer = UserCreateSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        confirmation_code = ''.join(random.choices(digits, k=5))
-        serializer.save(confirmation_code=confirmation_code)
-
     response_data = {
         'username': username,
         'email': email,
     }
-
     send_mail(
         'Код подтверждения для API_YAMDB',
         'Код подтверждения: ' + confirmation_code,

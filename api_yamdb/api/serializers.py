@@ -1,5 +1,6 @@
 import datetime as dt
 
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound
@@ -164,12 +165,10 @@ class UserCreateSerializer(
     username = serializers.CharField(
         required=True,
         max_length=MAX_USERNAME_LENGTH,
-        validators=[UniqueValidator(queryset=User.objects.all())]
     )
     email = serializers.EmailField(
         required=True,
         max_length=MAX_EMAIL_LENGTH,
-        validators=[UniqueValidator(queryset=User.objects.all())],
     )
 
     class Meta:
@@ -180,20 +179,24 @@ class UserCreateSerializer(
         username = data.get('username')
         email = data.get('email')
 
-        user = User.objects.filter(username=username)
-        if user.exists() and user.first().email != email:
-            raise serializers.ValidationError(
-                'Email does not match the existing user.'
-            )
-
+        user = User.objects.filter(username=username, email=email).first()
+        if not user:
+            if User.objects.filter(Q(username=username) | Q(email=email)).exists():
+                raise serializers.ValidationError(
+                    'Username или email занят.'
+                )
         return data
 
     def create(self, validated_data):
         username = validated_data.get('username')
         email = validated_data.get('email')
-
-        user = User.objects.create(username=username, email=email)
-
+        confirmation_code = validated_data.get('confirmation_code')
+        user, created = User.objects.get_or_create(
+            username=username,
+            email=email,
+        )
+        user.confirmation_code = confirmation_code
+        user.save()
         return user
 
 
