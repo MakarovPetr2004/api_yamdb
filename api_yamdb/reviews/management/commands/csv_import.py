@@ -1,10 +1,8 @@
 from csv import DictReader
 
 from django.core.management import BaseCommand
-
-from reviews.models import (
-    User, Title, Genre, Category, Genre_title, Review, Comment
-)
+from reviews.models import (Category, Comment, Genre, Genre_title, Review,
+                            Title, User)
 
 
 class Command(BaseCommand):

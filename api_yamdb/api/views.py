@@ -1,25 +1,25 @@
 import random
 from string import digits
 
+from api import serializers
 from django.core.mail import send_mail
 from django.db.models import Avg, PositiveSmallIntegerField
 from django.shortcuts import get_object_or_404
-from rest_framework import filters, mixins, viewsets, status
+from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.exceptions import ValidationError, NotFound
+from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-
-from api import serializers
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
+
 from .filters import TitleFilter
 from .permission import AdminOrReadOnly, AuthorOrModerOrReadOnly, IsAdminUser
-from .serializers import (GetTokenSerializer,
-                          UserCreateSerializer, UserSerializer)
+from .serializers import (GetTokenSerializer, UserCreateSerializer,
+                          UserSerializer)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -181,11 +181,20 @@ def get_token(request):
     user = User.objects.filter(username=username).first()
 
     if username is None:
-        return Response({'detail': 'Поле "username" обязательно'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'detail': 'Поле "username" обязательно'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
     if user is None:
-        return Response({'detail': 'Имя пользователя не найдено'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            {'detail': 'Имя пользователя не найдено'},
+            status=status.HTTP_404_NOT_FOUND
+        )
     if user.confirmation_code != confirmation_code:
-        return Response({'detail': 'Неверный код подтверждения'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'detail': 'Неверный код подтверждения'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     serializer = GetTokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)

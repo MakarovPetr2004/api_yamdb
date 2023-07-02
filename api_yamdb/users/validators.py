@@ -1,10 +1,7 @@
 import re
 
-from rest_framework.exceptions import ValidationError
-
 from constants import USERNAME_PATTERN
-
-import re
+from rest_framework.exceptions import ValidationError
 
 
 def regex_validator(value):
@@ -13,7 +10,8 @@ def regex_validator(value):
 
     if not re.match(USERNAME_PATTERN, value):
         invalid_chars = re.sub(USERNAME_PATTERN, '', value)
-        error_message = f"Username contains invalid characters: {invalid_chars}"
+        error_message = (f"Username contains "
+                         f"invalid characters: {invalid_chars}")
         raise ValidationError(error_message)
 
 

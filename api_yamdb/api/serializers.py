@@ -1,14 +1,12 @@
 import datetime as dt
 
+from constants import MAX_EMAIL_LENGTH, MAX_USERNAME_LENGTH
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-from rest_framework.exceptions import NotFound
 from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueValidator
-
 from reviews.models import Category, Comment, Genre, Review, Title
-from constants import MAX_EMAIL_LENGTH, MAX_USERNAME_LENGTH
 from users.models import User
 from users.validators import UsernameValidationMixin
 
@@ -181,7 +179,10 @@ class UserCreateSerializer(
 
         user = User.objects.filter(username=username, email=email).first()
         if not user:
-            if User.objects.filter(Q(username=username) | Q(email=email)).exists():
+            exist = User.objects.filter(
+                Q(username=username) | Q(email=email)
+            ).exists()
+            if exist:
                 raise serializers.ValidationError(
                     'Username или email занят.'
                 )
@@ -203,5 +204,3 @@ class UserCreateSerializer(
 class GetTokenSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
     confirmation_code = serializers.CharField(required=True)
-
-
