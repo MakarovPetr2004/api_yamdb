@@ -1,11 +1,11 @@
 import random
 from string import digits
 
-from api import serializers
 from django.core.mail import send_mail
-from django.db.models import Avg, PositiveSmallIntegerField
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, mixins, status, viewsets
+from rest_framework import filters, viewsets, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import LimitOffsetPagination
@@ -13,62 +13,52 @@ from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
+
+from api import serializers
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
-
 from .filters import TitleFilter
+from .mixins import BaseClassViewSet
 from .permission import AdminOrReadOnly, AuthorOrModerOrReadOnly, IsAdminUser
 from .serializers import (GetTokenSerializer, UserCreateSerializer,
                           UserSerializer)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(
+        rating=Avg(
+            'reviews__score',
+        )
+    )
     pagination_class = LimitOffsetPagination
     serializer_class = serializers.TitleSerializer
     permission_classes = (
         AdminOrReadOnly,
     )
     filterset_class = TitleFilter
-    ordering_fields = ['year']
+    ordering_fields = ['id',
+                       'name',
+                       'year',
+                       'rating',
+                       'description',
+                       'genre',
+                       'category'
+                       ]
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
             return serializers.TitleReadSerializer
         return serializers.TitleSerializer
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        queryset = queryset.annotate(
-            rating=Avg(
-                'reviews__score',
-                output_field=PositiveSmallIntegerField()
-            )
-        )
-        return queryset
-
-
-class BaseClassViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
-                       mixins.DestroyModelMixin, viewsets.GenericViewSet):
-    pagination_class = LimitOffsetPagination
-    permission_classes = (
-        AdminOrReadOnly,
-    )
-    filter_backends = (filters.SearchFilter,)
-
 
 class CategoryViewSet(BaseClassViewSet):
     queryset = Category.objects.all()
     serializer_class = serializers.CategorySerializer
-    search_fields = ('name',)
-    lookup_field = 'slug'
 
 
 class GenreViewSet(BaseClassViewSet):
     queryset = Genre.objects.all()
     serializer_class = serializers.GenreSerializer
-    search_fields = ('name',)
-    lookup_field = 'slug'
 
 
 class ReviewViewSet(viewsets.ModelViewSet):

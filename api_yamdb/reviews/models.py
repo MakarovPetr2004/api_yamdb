@@ -1,32 +1,32 @@
-from constants import CATEGORY_GENRE_NAME_LEN, CATEGORY_GENRE_SLUG_LEN
 from django.db import models
-from users.models import User
 
+from constants import CATEGORY_GENRE_NAME_LEN, CATEGORY_GENRE_SLUG_LEN
+from users.models import User
 from .validators import validate_max_min, validate_year
 
 
-class CategoryGenreClass(models.Model):
+class NameSlug(models.Model):
     name = models.CharField(max_length=CATEGORY_GENRE_NAME_LEN)
     slug = models.SlugField(unique=True, max_length=CATEGORY_GENRE_SLUG_LEN)
 
     class Meta:
         abstract = True
-        ordering = ['name']
+        ordering = ('name',)
 
     def __str__(self):
         return self.name
 
 
-class Category(CategoryGenreClass):
+class Category(NameSlug):
 
-    class Meta(CategoryGenreClass.Meta):
+    class Meta(NameSlug.Meta):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
 
-class Genre(CategoryGenreClass):
+class Genre(NameSlug):
 
-    class Meta(CategoryGenreClass.Meta):
+    class Meta(NameSlug.Meta):
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
@@ -34,7 +34,7 @@ class Genre(CategoryGenreClass):
 class Title(models.Model):
     name = models.CharField(
         'Название произведения',
-        max_length=256
+        max_length=CATEGORY_GENRE_NAME_LEN
     )
     year = models.PositiveSmallIntegerField(
         'Год выпуска',
@@ -57,6 +57,7 @@ class Title(models.Model):
     )
 
     class Meta:
+        ordering = ('name',)
         default_related_name = 'titles'
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
@@ -92,7 +93,7 @@ class Genre_title(models.Model):
         ]
 
 
-class AbstractCommentReview(models.Model):
+class AuthorTextPubDate(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE
@@ -112,8 +113,8 @@ class AbstractCommentReview(models.Model):
         return f'{self.author} в {self.pub_date} написал: {self.text}'
 
 
-class Review(AbstractCommentReview):
-    score = models.SmallIntegerField(
+class Review(AuthorTextPubDate):
+    score = models.PositiveSmallIntegerField(
         'Оценка',
         validators=[validate_max_min],
         default=1,
@@ -123,7 +124,7 @@ class Review(AbstractCommentReview):
         on_delete=models.CASCADE
     )
 
-    class Meta(AbstractCommentReview.Meta):
+    class Meta(AuthorTextPubDate.Meta):
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
         default_related_name = 'reviews'
@@ -135,13 +136,13 @@ class Review(AbstractCommentReview):
         ]
 
 
-class Comment(AbstractCommentReview):
+class Comment(AuthorTextPubDate):
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
     )
 
-    class Meta(AbstractCommentReview.Meta):
+    class Meta(AuthorTextPubDate.Meta):
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
         default_related_name = 'comments'

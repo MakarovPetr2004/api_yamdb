@@ -14,6 +14,10 @@ class CategoryAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
+class GenreTitleInline(admin.TabularInline):
+    model = Title.genre.through
+
+
 class GenreAdmin(admin.ModelAdmin):
     list_display = (
         'id',
@@ -26,6 +30,9 @@ class GenreAdmin(admin.ModelAdmin):
 
 
 class TitleAdmin(admin.ModelAdmin):
+    inlines = [
+        GenreTitleInline,
+    ]
     list_display = (
         'id',
         'name',
@@ -33,8 +40,11 @@ class TitleAdmin(admin.ModelAdmin):
         'category',
     )
     search_fields = ('name', 'year',)
-    ist_filter = ('name',)
+    list_filter = ('name',)
     empty_value_display = '-пусто-'
+
+    def get_genres(self, obj):
+        return "/".join([genre.name for genre in obj.genre.all()])
 
 
 class GenreTitleAdmin(admin.ModelAdmin):
