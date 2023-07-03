@@ -2,7 +2,7 @@ import random
 from string import digits
 
 from django.core.mail import send_mail
-from django.db.models import Avg, PositiveSmallIntegerField
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, viewsets, status
 from rest_framework.decorators import action, api_view, permission_classes
@@ -15,15 +15,19 @@ from rest_framework_simplejwt.tokens import AccessToken
 from api import serializers
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
-from .mixins import BaseClassViewSet
 from .filters import TitleFilter
+from .mixins import BaseClassViewSet
 from .permission import AdminOrReadOnly, AuthorOrModerOrReadOnly, IsAdminUser
 from .serializers import (EmailMatchSerializer, GetTokenSerializer,
                           UserCreateSerializer, UserSerializer)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(
+        rating=Avg(
+            'reviews__score',
+        )
+    )
     pagination_class = LimitOffsetPagination
     serializer_class = serializers.TitleSerializer
     permission_classes = (
@@ -43,16 +47,6 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.action in ('list', 'retrieve'):
             return serializers.TitleReadSerializer
         return serializers.TitleSerializer
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        queryset = queryset.annotate(
-            rating=Avg(
-                'reviews__score',
-                output_field=PositiveSmallIntegerField()
-            )
-        )
-        return queryset
 
 
 class CategoryViewSet(BaseClassViewSet):
