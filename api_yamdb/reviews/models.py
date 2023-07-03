@@ -1,12 +1,13 @@
 from django.db import models
 
+from constants import CATEGORY_GENRE_NAME_LEN, CATEGORY_GENRE_SLUG_LEN
 from users.models import User
 from .validators import validate_max_min, validate_year
 
 
 class NameSlug(models.Model):
-    name = models.CharField(max_length=256)
-    slug = models.SlugField(unique=True, max_length=50)
+    name = models.CharField(max_length=CATEGORY_GENRE_NAME_LEN)
+    slug = models.SlugField(unique=True, max_length=CATEGORY_GENRE_SLUG_LEN)
 
     class Meta:
         abstract = True
@@ -33,7 +34,7 @@ class Genre(NameSlug):
 class Title(models.Model):
     name = models.CharField(
         'Название произведения',
-        max_length=256
+        max_length=CATEGORY_GENRE_NAME_LEN
     )
     year = models.PositiveSmallIntegerField(
         'Год выпуска',
