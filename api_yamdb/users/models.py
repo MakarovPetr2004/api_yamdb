@@ -1,9 +1,8 @@
+from constants import (ADMIN_ROLE, CONFIRMATION_CODE_LENGTH,
+                       MAX_USERNAME_LENGTH, MODERATOR_ROLE, USER_ROLE)
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-
-from users.constants import (ADMIN_ROLE, CONFIRMATION_CODE_LENGTH,
-                             MAX_USERNAME_LENGTH, MODERATOR_ROLE, USER_ROLE)
-from users.validators import no_me_validator, regex_validator
+from users.validators import regex_validator
 
 
 class User(AbstractUser):
@@ -21,7 +20,7 @@ class User(AbstractUser):
         max_length=MAX_USERNAME_LENGTH,
         unique=True,
         blank=False,
-        validators=[regex_validator, no_me_validator],
+        validators=[regex_validator],
     )
     ROLES = (
         (USER_ROLE, 'Пользователь'),

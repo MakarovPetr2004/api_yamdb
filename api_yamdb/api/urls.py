@@ -1,6 +1,7 @@
-from api import views
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
+
+from api import views
 
 app_name = 'api'
 
@@ -20,19 +21,24 @@ router_v1.register(
     basename='comments'
 )
 
-prefix_ver = 'v1/'
-prefix_auth = 'auth/'
-
-urlpatterns = [
+auth_urls = [
     path(
-        prefix_ver + prefix_auth + 'signup/',
+        'signup/',
         views.create_user,
         name='create_user'
     ),
     path(
-        prefix_ver + prefix_auth + 'token/',
+        'token/',
         views.get_token,
         name='get_token'
     ),
-    path(prefix_ver, include(router_v1.urls)),
+]
+
+v1_urls = [
+    path('auth/', include(auth_urls)),
+    path('', include(router_v1.urls)),
+]
+
+urlpatterns = [
+    path('v1/', include(v1_urls))
 ]

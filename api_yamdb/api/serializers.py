@@ -1,13 +1,12 @@
 import datetime as dt
 
+from constants import MAX_EMAIL_LENGTH, MAX_USERNAME_LENGTH
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-from rest_framework.exceptions import NotFound
 from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueValidator
-
 from reviews.models import Category, Comment, Genre, Review, Title
-from users.constants import MAX_EMAIL_LENGTH, MAX_USERNAME_LENGTH
 from users.models import User
 from users.validators import UsernameValidationMixin
 
@@ -33,8 +32,8 @@ class TitleSerializer(serializers.ModelSerializer):
         queryset=Genre.objects.all(),
         slug_field='slug',
         many=True,
+        required=True,
     )
-    rating = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Title
@@ -42,12 +41,10 @@ class TitleSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'year',
-            'rating',
             'category',
             'genre',
             'description',
         )
-        read_only_fields = ('rating',)
 
     def validate_year(self, value):
         if value > dt.date.today().year:
@@ -55,18 +52,13 @@ class TitleSerializer(serializers.ModelSerializer):
         return value
 
     def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation['category'] = CategorySerializer(instance.category).data
-        representation['genre'] = GenreSerializer(
-            instance.genre.all(), many=True
-        ).data
-        return representation
+        return TitleReadSerializer(instance).data
 
 
 class TitleReadSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
-    rating = serializers.IntegerField()
+    rating = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Title
@@ -148,14 +140,14 @@ class UserSerializer(UsernameValidationMixin, serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = [
+        fields = (
             'username',
             'email',
             'first_name',
             'last_name',
             'bio',
             'role'
-        ]
+        )
 
 
 class UserCreateSerializer(
@@ -164,12 +156,10 @@ class UserCreateSerializer(
     username = serializers.CharField(
         required=True,
         max_length=MAX_USERNAME_LENGTH,
-        validators=[UniqueValidator(queryset=User.objects.all())]
     )
     email = serializers.EmailField(
         required=True,
         max_length=MAX_EMAIL_LENGTH,
-        validators=[UniqueValidator(queryset=User.objects.all())],
     )
 
     class Meta:
@@ -180,44 +170,30 @@ class UserCreateSerializer(
         username = data.get('username')
         email = data.get('email')
 
-        user = User.objects.filter(username=username)
-        if user.exists() and user.first().email != email:
-            raise serializers.ValidationError(
-                'Email does not match the existing user.'
-            )
-
+        user = User.objects.filter(username=username, email=email).first()
+        if not user:
+            exist = User.objects.filter(
+                Q(username=username) | Q(email=email)
+            ).exists()
+            if exist:
+                raise serializers.ValidationError(
+                    'Username или email занят.'
+                )
         return data
+
+    def create(self, validated_data):
+        username = validated_data.get('username')
+        email = validated_data.get('email')
+        confirmation_code = validated_data.get('confirmation_code')
+        user, created = User.objects.get_or_create(
+            username=username,
+            email=email,
+        )
+        user.confirmation_code = confirmation_code
+        user.save()
+        return user
 
 
 class GetTokenSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
     confirmation_code = serializers.CharField(required=True)
-
-    def validate(self, attrs):
-        username = attrs.get('username')
-        confirmation_code = attrs.get('confirmation_code')
-
-        user = User.objects.filter(username=username).first()
-
-        if user is None:
-            raise NotFound('Имя пользователя не найдено')
-
-        if user.confirmation_code != confirmation_code:
-            raise serializers.ValidationError('Неверный код подтверждения')
-
-        attrs['user'] = user
-        return attrs
-
-
-class EmailMatchSerializer(serializers.Serializer):
-    email = serializers.EmailField(required=True)
-
-    def validate_email(self, value):
-        user = self.context.get('user')
-
-        if user.email != value:
-            raise serializers.ValidationError(
-                'Email does not match the existing user.'
-            )
-
-        return value
