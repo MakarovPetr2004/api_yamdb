@@ -123,14 +123,10 @@ class UserViewSet(viewsets.ModelViewSet):
                 data=data,
                 partial=True
             )
-            try:
-                serializer.is_valid(raise_exception=True)
-            except ValidationError:
-                return Response(
-                    serializer.errors,
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+            serializer.is_valid(raise_exception=True)
             serializer.save()
+        if request.method == 'GET':
+            serializer = self.get_serializer(request.user)
         return Response(serializer.data)
 
 
