@@ -10,14 +10,9 @@ def regex_validator(value):
 
     if not re.match(USERNAME_PATTERN, value):
         invalid_chars = re.sub(USERNAME_PATTERN, '', value)
-        error_message = (f"Username contains "
-                         f"invalid characters: {invalid_chars}")
+        error_message = (f'Username contains '
+                         f'invalid characters: {invalid_chars}')
         raise ValidationError(error_message)
-
-
-def no_me_validator(value):
-    if 'me' == value:
-        raise ValidationError('A username cannot equals "me".')
 
 
 class UsernameValidationMixin:
