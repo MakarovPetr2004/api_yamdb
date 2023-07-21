@@ -192,7 +192,6 @@ class UserCreateSerializer(
     def create(self, validated_data):
         username = validated_data.get('username')
         email = validated_data.get('email')
-        confirmation_code = validated_data.get('confirmation_code')
         user, created = User.objects.get_or_create(
             username=username,
             email=email,

@@ -11,7 +11,8 @@ def regex_validator(value):
 
     invalid_chars = ''.join(set(re.sub(USERNAME_PATTERN, '', value)))
     if invalid_chars:
-        error_message = f"Username contains invalid characters: {invalid_chars}"
+        error_message = (f"Username contains invalid characters:"
+                         f" {invalid_chars}")
         raise ValidationError(error_message)
 
 

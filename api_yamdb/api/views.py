@@ -7,7 +7,6 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
@@ -17,7 +16,6 @@ from rest_framework_simplejwt.tokens import AccessToken
 from api import serializers
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
-
 from .filters import TitleFilter
 from .mixins import BaseClassViewSet
 from .permission import AdminOrReadOnly, AuthorOrModerOrReadOnly, IsAdminUser
@@ -161,7 +159,8 @@ def get_token(request):
     confirmation_code = request.data.get('confirmation_code')
 
     user = get_object_or_404(User, username=request.data.get('username'))
-    if user.confirmation_code != confirmation_code or user.confirmation_code == 0:
+    if (user.confirmation_code != confirmation_code
+            or user.confirmation_code == 0):
         return Response(
             {'detail': 'Неверный код подтверждения'},
             status=status.HTTP_400_BAD_REQUEST
