@@ -1,7 +1,8 @@
-from constants import (ADMIN_ROLE, CONFIRMATION_CODE_LENGTH,
-                       MAX_USERNAME_LENGTH, MODERATOR_ROLE, USER_ROLE)
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+
+from constants import (ADMIN_ROLE, CONFIRMATION_CODE_LENGTH,
+                       MAX_USERNAME_LENGTH, MODERATOR_ROLE, USER_ROLE)
 from users.validators import regex_validator
 
 

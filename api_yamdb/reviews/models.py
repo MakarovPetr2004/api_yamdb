@@ -2,6 +2,7 @@ from django.db import models
 
 from constants import CATEGORY_GENRE_NAME_LEN, CATEGORY_GENRE_SLUG_LEN
 from users.models import User
+
 from .validators import validate_max_min, validate_year
 
 
@@ -107,7 +108,7 @@ class AuthorTextPubDate(models.Model):
 
     class Meta:
         abstract = True
-        ordering = ['-pub_date']
+        ordering = ('-pub_date',)
 
     def __str__(self):
         return f'{self.author} в {self.pub_date} написал: {self.text}'
