@@ -197,9 +197,10 @@ class UserCreateSerializer(
             username=username,
             email=email,
         )
-        user.confirmation_code = confirmation_code
         user.save()
-        return user
+        if created:
+            return user
+        return validated_data
 
 
 class GetTokenSerializer(serializers.Serializer):

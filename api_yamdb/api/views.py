@@ -118,14 +118,10 @@ class UserViewSet(viewsets.ModelViewSet):
                 data=data,
                 partial=True
             )
-            try:
-                serializer.is_valid(raise_exception=True)
-            except ValidationError:
-                return Response(
-                    serializer.errors,
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+            serializer.is_valid(raise_exception=True)
             serializer.save()
+        if request.method == 'GET':
+            serializer = self.get_serializer(request.user)
         return Response(serializer.data)
 
 
@@ -140,11 +136,6 @@ def create_user(request):
     confirmation_code = ''.join(random.choices(digits, k=5))
     serializer.save(confirmation_code=confirmation_code)
 
-    response_status = status.HTTP_200_OK
-    response_data = {
-        'username': username,
-        'email': email,
-    }
     send_mail(
         'Код подтверждения для API_YAMDB',
         'Код подтверждения: ' + confirmation_code,
@@ -153,36 +144,30 @@ def create_user(request):
         fail_silently=False,
     )
 
-    return Response(response_data, status=response_status)
+    return Response(
+        {
+            'username': username,
+            'email': email,
+        },
+        status=status.HTTP_200_OK
+    )
 
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def get_token(request):
-    username = request.data.get('username')
+    serializer = GetTokenSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
     confirmation_code = request.data.get('confirmation_code')
 
-    user = User.objects.filter(username=username).first()
-
-    if username is None:
-        return Response(
-            {'detail': 'Поле "username" обязательно'},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    if user is None:
-        return Response(
-            {'detail': 'Имя пользователя не найдено'},
-            status=status.HTTP_404_NOT_FOUND
-        )
-    if user.confirmation_code != confirmation_code:
+    user = get_object_or_404(User, username=request.data.get('username'))
+    if user.confirmation_code != confirmation_code or user.confirmation_code == 0:
         return Response(
             {'detail': 'Неверный код подтверждения'},
             status=status.HTTP_400_BAD_REQUEST
         )
-
-    serializer = GetTokenSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-
+    user.confirmation_code = 0
+    user.save()
     token = AccessToken.for_user(user)
 
     return Response({'token': str(token)}, status=status.HTTP_200_OK)
