@@ -1,12 +1,11 @@
 import datetime as dt
 
+from constants import MAX_EMAIL_LENGTH, MAX_USERNAME_LENGTH
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueValidator
-
-from constants import MAX_EMAIL_LENGTH, MAX_USERNAME_LENGTH
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
 from users.validators import UsernameValidationMixin
@@ -196,7 +195,6 @@ class UserCreateSerializer(
             username=username,
             email=email,
         )
-        user.save()
         if created:
             return user
         return validated_data
