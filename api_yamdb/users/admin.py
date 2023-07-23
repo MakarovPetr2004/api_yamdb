@@ -4,7 +4,8 @@ from django.contrib.auth.models import User
 
 
 class CustomUserAdmin(BaseUserAdmin):
-    list_display = ('username', 'email', 'is_staff', 'get_role_display', 'groups')
+    list_display = ('username', 'email', 'is_staff',)
+    list_display += ('get_role_display', 'groups',)
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
     search_fields = ('username', 'email')
     ordering = ('username',)
