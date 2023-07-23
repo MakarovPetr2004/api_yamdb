@@ -1,6 +1,7 @@
 import random
 from string import digits
 
+from api import serializers
 from django.core.mail import send_mail
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
@@ -12,10 +13,9 @@ from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-
-from api import serializers
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
+
 from .filters import TitleFilter
 from .mixins import BaseClassViewSet
 from .permission import AdminOrReadOnly, AuthorOrModerOrReadOnly, IsAdminUser
