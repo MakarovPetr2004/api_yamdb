@@ -196,7 +196,6 @@ class UserCreateSerializer(
             username=username,
             email=email,
         )
-        user.save()
         if created:
             return user
         return validated_data
