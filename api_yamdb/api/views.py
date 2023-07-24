@@ -1,7 +1,6 @@
 import random
 from string import digits
 
-from api import serializers
 from django.core.mail import send_mail
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404

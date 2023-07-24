@@ -1,7 +1,7 @@
-from constants import CATEGORY_GENRE_NAME_LEN, CATEGORY_GENRE_SLUG_LEN
 from django.db import models
-from users.models import User
 
+from constants import CATEGORY_GENRE_NAME_LEN, CATEGORY_GENRE_SLUG_LEN
+from users.models import User
 from .validators import validate_max_min, validate_year
 
 
