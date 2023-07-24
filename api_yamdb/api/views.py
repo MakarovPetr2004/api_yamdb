@@ -1,6 +1,7 @@
 import random
 from string import digits
 
+from api import serializers
 from django.core.mail import send_mail
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
@@ -13,11 +14,10 @@ from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-from reviews.models import Category, Genre, Review, Title
-from users.models import User
 
 from api import serializers
-
+from reviews.models import Category, Genre, Review, Title
+from users.models import User
 from .filters import TitleFilter
 from .mixins import BaseClassViewSet
 from .permission import AdminOrReadOnly, AuthorOrModerOrReadOnly, IsAdminUser
@@ -111,17 +111,14 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated]
     )
     def me(self, request):
-        serializer = self.get_serializer(request.user)
         if request.method == 'PATCH':
-            data = request.data.copy()
-            data.pop('role', None)
             serializer = self.get_serializer(
                 request.user,
-                data=data,
+                data=request.data,
                 partial=True
             )
             serializer.is_valid(raise_exception=True)
-            serializer.save()
+            serializer.save(role=request.user.role)
         if request.method == 'GET':
             serializer = self.get_serializer(request.user)
         return Response(serializer.data)
@@ -160,9 +157,9 @@ def create_user(request):
 def get_token(request):
     serializer = GetTokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    confirmation_code = request.data.get('confirmation_code')
+    confirmation_code = serializer.data.get('confirmation_code')
 
-    user = get_object_or_404(User, username=request.data.get('username'))
+    user = get_object_or_404(User, username=serializer.data.get('username'))
     if (user.confirmation_code != confirmation_code
             or user.confirmation_code == 0):
         return Response(
