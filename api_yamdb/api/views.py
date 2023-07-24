@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.filters import OrderingFilter
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
@@ -34,8 +35,10 @@ class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = (
         AdminOrReadOnly,
     )
-    filter_backends = [DjangoFilterBackend]
     filterset_class = TitleFilter
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    ordering_fields = ['name', 'id']
+    ordering = ['name']
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
@@ -107,17 +110,14 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated]
     )
     def me(self, request):
-        serializer = self.get_serializer(request.user)
         if request.method == 'PATCH':
-            data = request.data.copy()
-            data.pop('role', None)
             serializer = self.get_serializer(
                 request.user,
-                data=data,
+                data=request.data,
                 partial=True
             )
             serializer.is_valid(raise_exception=True)
-            serializer.save()
+            serializer.save(role=request.user.role)
         if request.method == 'GET':
             serializer = self.get_serializer(request.user)
         return Response(serializer.data)
@@ -156,9 +156,9 @@ def create_user(request):
 def get_token(request):
     serializer = GetTokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    confirmation_code = request.data.get('confirmation_code')
+    confirmation_code = serializer.data.get('confirmation_code')
 
-    user = get_object_or_404(User, username=request.data.get('username'))
+    user = get_object_or_404(User, username=serializer.data.get('username'))
     if (user.confirmation_code != confirmation_code
             or user.confirmation_code == 0):
         return Response(

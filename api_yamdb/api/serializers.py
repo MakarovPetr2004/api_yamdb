@@ -56,7 +56,7 @@ class TitleSerializer(serializers.ModelSerializer):
     def validate_genre(genre, value):
         if not genre:
             raise serializers.ValidationError(
-                "Этот список не может быть пустым.")
+                'Этот список не может быть пустым.')
         return value
 
     def to_representation(self, instance):
@@ -196,7 +196,6 @@ class UserCreateSerializer(
             username=username,
             email=email,
         )
-        user.save()
         if created:
             return user
         return validated_data
