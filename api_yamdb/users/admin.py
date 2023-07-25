@@ -9,7 +9,7 @@ class CustomUserAdmin(BaseUserAdmin):
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
     search_fields = ('username', 'email')
     ordering = ('username',)
-    list_of_editable_models = ['Group']
+    list_editable = ['role']
 
 
 admin.site.register(User, CustomUserAdmin)

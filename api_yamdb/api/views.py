@@ -156,9 +156,9 @@ def create_user(request):
 def get_token(request):
     serializer = GetTokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    confirmation_code = serializer.data.get('confirmation_code')
+    confirmation_code = serializer.validated_data.get('confirmation_code')
 
-    user = get_object_or_404(User, username=serializer.data.get('username'))
+    user = get_object_or_404(User, username=serializer.validated_data.get('username'))
     if (user.confirmation_code != confirmation_code
             or user.confirmation_code == 0):
         return Response(
