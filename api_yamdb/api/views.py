@@ -158,7 +158,9 @@ def get_token(request):
     serializer.is_valid(raise_exception=True)
     confirmation_code = serializer.validated_data.get('confirmation_code')
 
-    user = get_object_or_404(User, username=serializer.validated_data.get('username'))
+    user = get_object_or_404(
+        User, username=serializer.validated_data.get('username')
+    )
     if (user.confirmation_code != confirmation_code
             or user.confirmation_code == 0):
         return Response(

@@ -192,10 +192,14 @@ class UserCreateSerializer(
     def create(self, validated_data):
         username = validated_data.get('username')
         email = validated_data.get('email')
-        user, created = User.objects.get_or_create(
+        confirmation_code = validated_data.get('confirmation_code')
+
+        user, created = User.objects.update_or_create(
             username=username,
             email=email,
+            defaults={'confirmation_code': confirmation_code}
         )
+
         if created:
             return user
         return validated_data
