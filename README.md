@@ -15,15 +15,58 @@
 
 
 ## Локальный запуск
-- Перейдите в папку _infra_ и запустите docker compose: ```docker compose up --build```
-- Выполните миграции:
-```sh 
-docker compose exec backend python manage.py makemigrations
-docker compose exec backend python manage.py migrate
+Клонировать репозиторий и перейти в него в командной строке:
+
 ```
-- Соберите статику для _backend_
-```sh 
-docker compose exec backend python manage.py collectstatic
+git clone 
+```
+
+```
+cd api_yamdb
+```
+
+Cоздать и активировать виртуальное окружение:
+
+```
+python3 -m venv venv
+```
+
+* Если у вас Linux/macOS
+
+    ```
+    source venv/bin/activate
+    ```
+
+* Если у вас windows
+
+    ```
+    source venv/scripts/activate
+    ```
+
+Установить зависимости из файла requirements.txt:
+
+```
+python3 -m pip install --upgrade pip
+```
+
+```
+pip install -r requirements.txt
+```
+
+Использовать миграции:
+
+```
+python3 manage.py makemigrations
+```
+
+```
+python3 manage.py migrate
+```
+
+Запуск:
+
+```
+python3 manage.py runserver
 ```
 
 ## Технологии
